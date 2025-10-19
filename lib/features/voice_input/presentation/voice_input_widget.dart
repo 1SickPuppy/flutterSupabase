@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../domain/voice_input_service.dart';
-import '../../../core/di/service_locator.dart';
 
 class VoiceInputWidget extends StatefulWidget {
   const VoiceInputWidget({Key? key}) : super(key: key);
@@ -10,26 +10,14 @@ class VoiceInputWidget extends StatefulWidget {
 }
 
 class _VoiceInputWidgetState extends State<VoiceInputWidget> {
-  final VoiceInputService _voiceInputService = voiceInputService;
+  late final VoiceInputService _voiceInputService;
   String _recognizedText = '';
-  bool _isInitialized = false;
+  bool _isListening = false;
 
   @override
   void initState() {
     super.initState();
-    _initializeSpeechRecognition();
-    _voiceInputService.textStream.listen((text) {
-      setState(() {
-        _recognizedText = text;
-      });
-    });
-  }
-
-  Future<void> _initializeSpeechRecognition() async {
-    final isAvailable = await _voiceInputService.initialize();
-    setState(() {
-      _isInitialized = isAvailable;
-    });
+    _voiceInputService = context.read<VoiceInputService>();
   }
 
   @override
@@ -37,58 +25,40 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget> {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text(
+          Text(
             'Voice Input',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 20),
-          Card(
-            elevation: 4,
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  Text(
-                    _recognizedText.isEmpty ? 'Tryk på mikrofonen for at starte' : _recognizedText,
-                    style: const TextStyle(fontSize: 18),
-                  ),
-                  const SizedBox(height: 20),
-                  ElevatedButton.icon(
-                    onPressed: _isInitialized
-                        ? () {
-                            if (_voiceInputService.isListening) {
-                              _voiceInputService.stopListening();
-                            } else {
-                              _voiceInputService.startListening();
-                            }
-                            setState(() {});
-                          }
-                        : null,
-                    icon: Icon(_voiceInputService.isListening ? Icons.stop : Icons.mic),
-                    label: Text(_voiceInputService.isListening ? 'Stop' : 'Start optagelse'),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          Text(
+            _recognizedText.isEmpty ? 'Tap the mic to start speaking' : _recognizedText,
+            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 20),
-          if (_recognizedText.isNotEmpty)
-            ElevatedButton(
-              onPressed: () {
-                // Her kunne man sende teksten videre til data extraction
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Tekst sendt til databehandling')),
-                );
-              },
-              child: const Text('Behandl tekst'),
-            ),
+          FloatingActionButton(
+            onPressed: _toggleListening,
+            child: Icon(_isListening ? Icons.mic_off : Icons.mic),
+          ),
         ],
       ),
     );
+  }
+
+  void _toggleListening() {
+    setState(() {
+      _isListening = !_isListening;
+      if (_isListening) {
+        _voiceInputService.startListening().then((result) {
+          setState(() {
+            _recognizedText = result;
+            _isListening = false;
+          });
+        });
+      } else {
+        _voiceInputService.stopListening();
+      }
+    });
   }
 }

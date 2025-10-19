@@ -30,7 +30,15 @@ class SecureStorageServiceImpl implements SecureStorageService {
     // Tjek om vi allerede har en nøgle
     String? existingKey = await _secureStorage.read(key: 'encryption_key');
     
-    return existingKey;
+    if (existingKey != null) {
+      return existingKey;
+    }
+
+    // Generer en ny tilfældig 32-byte nøgle, hvis ingen findes
+    final key = encrypt.Key.fromSecureRandom(32);
+    final keyString = key.base64;
+    await _secureStorage.write(key: 'encryption_key', value: keyString);
+    return keyString;
   }
 
   @override
