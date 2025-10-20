@@ -107,4 +107,10 @@ class SupabaseServiceImpl implements SupabaseService {
       };
     }
   }
+  @override
+  Future<bool> checkConnection() async {
+    // A simple, quick check to see if the client is initialized and can reach the API
+    final user = _supabase.auth.currentUser;
+    return user != null || _supabase.auth.currentSession != null;
+  }
 }

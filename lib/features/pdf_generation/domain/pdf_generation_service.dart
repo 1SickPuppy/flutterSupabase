@@ -4,4 +4,5 @@ import 'dart:typed_data';
 abstract class PdfGenerationService {
   Future<Uint8List> generatePdfFromData(Map<String, dynamic> data);
   Future<String> savePdfToStorage(Uint8List pdfBytes, String fileName);
+  Future<String> generatePdf(Map<String, dynamic> offerData);
 }

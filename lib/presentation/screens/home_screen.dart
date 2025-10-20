@@ -6,7 +6,7 @@ import '../../features/pdf_generation/presentation/pdf_generation_widget.dart';
 import '../../features/supabase_integration/presentation/supabase_widget.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -30,7 +30,8 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBar.fixed,
+        // ⭐️ FIX IS HERE: Used the correct enum constant ⭐️
+        type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
         onTap: (index) {
           setState(() {

@@ -46,6 +46,15 @@ class VoiceInputServiceImpl implements VoiceInputService {
   @override
   Stream<String> get textStream => _textStreamController.stream;
 
-  @override
-  bool get isListening => _isListening;
+
+@override
+bool get isListening => _isListening;
+
+// ⭐️ FIX: Implement the dispose method from the interface ⭐️
+@override
+void dispose() {
+  _speechToText.stop();
+  _textStreamController.close();
+  print('VoiceInputService is disposed.');
+}
 }

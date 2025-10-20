@@ -5,4 +5,5 @@ abstract class VoiceInputService {
   Future<void> stopListening();
   Stream<String> get textStream;
   bool get isListening;
+  void dispose();
 }

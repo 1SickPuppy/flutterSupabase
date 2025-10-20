@@ -1,9 +1,11 @@
+// lib/features/data_extraction/presentation/data_extraction_widget.dart (RETTET)
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../domain/data_extraction_service.dart';
 
 class DataExtractionWidget extends StatefulWidget {
-  const DataExtractionWidget({Key? key}) : super(key: key);
+  const DataExtractionWidget({super.key});
 
   @override
   State<DataExtractionWidget> createState() => _DataExtractionWidgetState();
@@ -22,6 +24,8 @@ class _DataExtractionWidgetState extends State<DataExtractionWidget> {
 
   @override
   Widget build(BuildContext context) {
+    // Bemærk: Det er mere almindeligt at bruge context.watch eller en Consumer
+    // for widgets, der skal genopbygges, men context.read er okay for at kalde metoder.
     final dataService = context.read<DataExtractionService>();
 
     return Padding(
@@ -47,20 +51,26 @@ class _DataExtractionWidgetState extends State<DataExtractionWidget> {
             onPressed: _isLoading
                 ? null
                 : () async {
-                    setState(() => _isLoading = true);
-                    try {
-                      final result = await dataService.extractData(_textController.text);
-                      setState(() => _extractedData = result);
-                    } finally {
-                      setState(() => _isLoading = false);
-                    }
-                  },
+              setState(() => _isLoading = true);
+              try {
+                final result = await dataService.extractData(_textController.text);
+
+                // ⭐️ FIX: Konverter Map<String, dynamic> til String for visning ⭐️
+                setState(() => _extractedData = result.toString());
+
+              } catch (e) {
+                // Håndter fejlen fra servicen
+                setState(() => _extractedData = 'Error: $e');
+              } finally {
+                setState(() => _isLoading = false);
+              }
+            },
             child: _isLoading
                 ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
+              height: 20,
+              width: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
                 : const Text('Extract Data'),
           ),
           if (_extractedData.isNotEmpty) ...[

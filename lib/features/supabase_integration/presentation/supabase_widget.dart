@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../domain/supabase_service.dart';
 
 class SupabaseWidget extends StatelessWidget {
-  const SupabaseWidget({Key? key}) : super(key: key);
+  const SupabaseWidget({super.key});
 
   @override
   Widget build(BuildContext context) {

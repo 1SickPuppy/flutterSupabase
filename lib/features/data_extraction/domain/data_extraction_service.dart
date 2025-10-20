@@ -2,4 +2,5 @@
 abstract class DataExtractionService {
   Future<Map<String, dynamic>> extractDataFromText(String text);
   Future<Map<String, dynamic>> extractDataFromUrl(String url);
+
 }

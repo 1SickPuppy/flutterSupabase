@@ -9,6 +9,9 @@
       <excludeFolder url="file://$MODULE_DIR$/build" />
       <excludeFolder url="file://$MODULE_DIR$/temp" />
       <excludeFolder url="file://$MODULE_DIR$/tmp" />
+      <excludeFolder url="file://$MODULE_DIR$/windows/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/windows/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/windows/build" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

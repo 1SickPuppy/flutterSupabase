@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../domain/voice_input_service.dart';
+import 'dart:async'; // ⭐️ Import dart:async for StreamSubscription
 
 class VoiceInputWidget extends StatefulWidget {
-  const VoiceInputWidget({Key? key}) : super(key: key);
+  const VoiceInputWidget({super.key});
 
   @override
   State<VoiceInputWidget> createState() => _VoiceInputWidgetState();
@@ -11,6 +12,7 @@ class VoiceInputWidget extends StatefulWidget {
 
 class _VoiceInputWidgetState extends State<VoiceInputWidget> {
   late final VoiceInputService _voiceInputService;
+  late StreamSubscription<String> _textSubscription; // ⭐️ Subscription to handle text updates
   String _recognizedText = '';
   bool _isListening = false;
 
@@ -18,10 +20,30 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget> {
   void initState() {
     super.initState();
     _voiceInputService = context.read<VoiceInputService>();
+
+    // ⭐️ FIX 1: Subscribe to the stream to get recognized text
+    _textSubscription = _voiceInputService.textStream.listen((text) {
+      setState(() {
+        _recognizedText = text;
+        // The service itself should handle setting its internal _isListening to false
+        // when the final result is ready, but we manage the UI state here.
+        _isListening = false;
+      });
+    });
+  }
+
+  // ⭐️ FIX 2: Essential cleanup to prevent memory leaks ⭐️
+  @override
+  void dispose() {
+    _textSubscription.cancel();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    // ... (Build method remains the same) ...
+    // Note: In a larger app, you'd use the VoiceToDataNotifier,
+    // but for now, we use the service directly.
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -46,19 +68,21 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget> {
     );
   }
 
-  void _toggleListening() {
-    setState(() {
-      _isListening = !_isListening;
-      if (_isListening) {
-        _voiceInputService.startListening().then((result) {
-          setState(() {
-            _recognizedText = result;
-            _isListening = false;
-          });
-        });
-      } else {
-        _voiceInputService.stopListening();
-      }
-    });
+  void _toggleListening() async { // ⭐️ Make the function async
+    if (_isListening) {
+      // Stop listening
+      await _voiceInputService.stopListening();
+      setState(() {
+        _isListening = false;
+      });
+    } else {
+      // Start listening
+      setState(() {
+        _isListening = true;
+        _recognizedText = ''; // Clear previous text
+      });
+      // ⭐️ FIX 3: Simply call the async function; do not use .then() for text result
+      await _voiceInputService.startListening();
+    }
   }
 }
