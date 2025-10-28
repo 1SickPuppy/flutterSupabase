@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../domain/voice_input_service.dart';
-import '../../../core/di/service_locator.dart';
+import '../../../core/di/service_locator.dart'; // Importerer din GetIt instance
+import 'package:provider/provider.dart'; // Importér Provider
+import '../../job_flow/job_flow_notifier.dart'; // Du skal bruge denne til JobFlow
 
 class VoiceInputWidget extends StatefulWidget {
   const VoiceInputWidget({super.key});
@@ -10,7 +12,9 @@ class VoiceInputWidget extends StatefulWidget {
 }
 
 class _VoiceInputWidgetState extends State<VoiceInputWidget> {
-  final VoiceInputService _voiceInputService = voiceInputService;
+  // ⭐️ FEJLFRI LINJE: Hent VoiceInputService via GetIt ⭐️
+  final VoiceInputService _voiceInputService = getIt<VoiceInputService>();
+
   String _recognizedText = '';
   bool _isInitialized = false;
 
@@ -34,6 +38,9 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget> {
 
   @override
   Widget build(BuildContext context) {
+    // Du skal bruge Notifier'en til at trigge Data Extraction, som vi har diskuteret:
+    final jobFlowNotifier = Provider.of<JobFlowNotifier>(context);
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -58,13 +65,13 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget> {
                   ElevatedButton.icon(
                     onPressed: _isInitialized
                         ? () {
-                            if (_voiceInputService.isListening) {
-                              _voiceInputService.stopListening();
-                            } else {
-                              _voiceInputService.startListening();
-                            }
-                            setState(() {});
-                          }
+                      if (_voiceInputService.isListening) {
+                        _voiceInputService.stopListening();
+                      } else {
+                        _voiceInputService.startListening();
+                      }
+                      setState(() {});
+                    }
                         : null,
                     icon: Icon(_voiceInputService.isListening ? Icons.stop : Icons.mic),
                     label: Text(_voiceInputService.isListening ? 'Stop' : 'Start optagelse'),
@@ -79,8 +86,10 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget> {
           const SizedBox(height: 20),
           if (_recognizedText.isNotEmpty)
             ElevatedButton(
+              // ⭐️ BRUG NOTIFIEREN HER ⭐️
               onPressed: () {
-                // Her kunne man sende teksten videre til data extraction
+                // Sender teksten til Data Extraction via Notifier'en
+                jobFlowNotifier.extractData(_recognizedText);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Tekst sendt til databehandling')),
                 );

@@ -4,13 +4,20 @@ version: 1.0.0+1
 publish_to: 'none'
 
 environment:
-  sdk: ">=2.19.0 <3.0.0"
-  flutter: ">=3.0.0"
+
+    sdk: '>=3.0.0 <4.0.0' # Vi sætter den til minimum Dart 3.0
+
+
 
 dependencies:
+
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.5
+
+  #
+  json_annotation: ^4.9.0
+
   
   # State management
   provider: ^6.0.5
@@ -34,7 +41,13 @@ dependencies:
 
   get_it: any
   intl: any
+
 dev_dependencies:
+
+  build_runner: ^2.4.6
+
+  json_serializable: ^6.7.1
+
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0

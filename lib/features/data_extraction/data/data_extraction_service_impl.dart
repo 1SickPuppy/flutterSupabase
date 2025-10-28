@@ -1,26 +1,21 @@
 // lib/features/data_extraction/data/data_extraction_service_impl.dart
 
-import 'dart:async'; // Til Future.delayed
+import 'dart:async';
 import '../domain/data_extraction_service.dart';
-import 'mock_data.dart'; // Importér de mock data
+import 'mock_data.dart'; // Sikker på du har denne import
 
-/// Mock-implementering af Data Extraction Service.
-/// Simulerer AI-analyse ved at returnere strukturerede data.
 class DataExtractionServiceImpl implements DataExtractionService {
 
   @override
   Future<Map<String, dynamic>> extractDataFromText(String transcription) async {
-    // ⭐️ Simulerer netværksforsinkelse (2 sekunder) for at vise loading state ⭐️
     await Future.delayed(const Duration(seconds: 2));
-
-    // Her ville du normalt kalde din AI-API.
-    // For nu returnerer vi de forventede mock-data, uanset transkriptionen.
-
-    if (transcription.trim().isEmpty) {
-      // Hvis transkriptionen er tom, kan du vælge at kaste en fejl
-      // eller returnere et tomt resultat, men vi tillader mock-data for at teste flowet.
-    }
-
+    // Antager at mockAnalysisData er defineret i mock_data.dart
     return mockAnalysisData;
+  }
+
+  // ⭐️ VIGTIGT: Denne metode opfylder DataExtractionService interfacet ⭐️
+  @override
+  Future<Map<String, dynamic>> extractDataFromUrl(String url) async {
+    throw UnimplementedError('URL extraction not implemented for this service.');
   }
 }
