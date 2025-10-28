@@ -4,7 +4,7 @@ import '../domain/pdf_generation_service.dart';
 import '../../../core/di/service_locator.dart';
 
 class PdfGenerationWidget extends StatefulWidget {
-  const PdfGenerationWidget({Key? key}) : super(key: key);
+  const PdfGenerationWidget({super.key});
 
   @override
   State<PdfGenerationWidget> createState() => _PdfGenerationWidgetState();

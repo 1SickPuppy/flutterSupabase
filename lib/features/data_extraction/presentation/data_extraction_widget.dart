@@ -3,7 +3,7 @@ import '../domain/data_extraction_service.dart';
 import '../../../core/di/service_locator.dart';
 
 class DataExtractionWidget extends StatefulWidget {
-  const DataExtractionWidget({Key? key}) : super(key: key);
+  const DataExtractionWidget({super.key});
 
   @override
   State<DataExtractionWidget> createState() => _DataExtractionWidgetState();

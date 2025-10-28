@@ -5,7 +5,7 @@ import '../../features/pdf_generation/presentation/pdf_generation_widget.dart';
 import '../../features/supabase_integration/presentation/supabase_widget.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();

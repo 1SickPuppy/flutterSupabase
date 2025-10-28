@@ -3,7 +3,7 @@ import '../domain/voice_input_service.dart';
 import '../../../core/di/service_locator.dart';
 
 class VoiceInputWidget extends StatefulWidget {
-  const VoiceInputWidget({Key? key}) : super(key: key);
+  const VoiceInputWidget({super.key});
 
   @override
   State<VoiceInputWidget> createState() => _VoiceInputWidgetState();

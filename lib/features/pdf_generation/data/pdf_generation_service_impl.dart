@@ -1,15 +1,34 @@
+// lib/features/pdf_generation/data/pdf_generation_service_impl.dart
+
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
-import 'dart:io';
-import '../domain/pdf_generation_service.dart';
+import 'package:intl/intl.dart'; // ⭐️ VIGTIGT: Tilføj denne import! ⭐️
 
+import '../../pdf_generation/domain/pdf_generation_service.dart';
+
+/// Implementering af PdfGenerationService, der bruger 'pdf' pakken.
 class PdfGenerationServiceImpl implements PdfGenerationService {
+
+  // Dansk valutaformatering
+  final NumberFormat _currencyFormat = NumberFormat.currency(
+    locale: 'da_DK',
+    symbol: 'DKK',
+    decimalDigits: 2,
+  );
+
   @override
   Future<Uint8List> generatePdfFromData(Map<String, dynamic> data) async {
     final pdf = pw.Document();
-    
+
+    // Henter data fra Map
+    final List<dynamic> parts = data['partsNeeded'] as List<dynamic>;
+    final double totalEstimate = data['totalEstimate'] as double;
+    final String customerName = data['customerName'] as String;
+
+    // --- Bygger PDF-dokumentets struktur (Med Valuta og Tabel) ---
     pdf.addPage(
       pw.Page(
         pageFormat: PdfPageFormat.a4,
@@ -17,48 +36,82 @@ class PdfGenerationServiceImpl implements PdfGenerationService {
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              pw.Header(
-                level: 0,
-                child: pw.Text('DeveloperCat DK - Rapport', 
-                  style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)
-                ),
+              pw.Text(
+                'Tilbud: ${data['job']}',
+                style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold),
               ),
               pw.SizedBox(height: 20),
-              pw.Text('Genereret: ${DateTime.now().toString()}'),
+
+              // --- Kundedetaljer ---
+              pw.Text('Kundenavn: $customerName'),
+              pw.Text('Adresse: ${data['address']}'),
+              pw.Text('Tlf: ${data['phone']} | Email: ${data['email']}'),
               pw.SizedBox(height: 20),
+
+              // --- Opgavebeskrivelse ---
               pw.Divider(),
+              pw.Text(
+                'Opgavebeskrivelse:',
+                style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+              ),
+              pw.Text(data['assignment'] as String),
               pw.SizedBox(height: 20),
-              
-              // Dynamisk indhold baseret på data
-              ...data.entries.map((entry) => pw.Padding(
-                padding: const pw.EdgeInsets.symmetric(vertical: 4),
-                child: pw.Row(
+
+              // --- Dele og Estimater (Tabel) ---
+              pw.Divider(),
+              pw.Text(
+                'Materialer & Estimat:',
+                style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+              ),
+              pw.Table.fromTextArray(
+                context: context,
+                data: <List<String>>[
+                  <String>['Vare', 'Antal', 'Pris pr. stk.', 'Total'],
+                  ...parts.map((p) => [
+                    p['name'] as String,
+                    '1',
+                    _currencyFormat.format(p['price']), // ⭐️ Formatering her
+                    _currencyFormat.format(p['price']),
+                  ]),
+                  // Mock Arbejdsløn
+                  <String>['Arbejdsløn (Estimeret)', '', '', _currencyFormat.format(1500.0)],
+                  // Total
+                  <String>['', '', 'TOTAL (DKK)', _currencyFormat.format(totalEstimate)],
+                ],
+                cellStyle: const pw.TextStyle(fontSize: 10),
+                headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10),
+                border: null,
+              ),
+
+              // --- Noter ---
+              pw.SizedBox(height: 30),
+              if (data['notes'] != null && (data['notes'] as String).isNotEmpty)
+                pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
                     pw.Text(
-                      '${entry.key}: ',
+                      'Noter:',
                       style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
                     ),
-                    pw.Expanded(
-                      child: pw.Text(entry.value.toString()),
-                    ),
+                    pw.Text(data['notes'] as String),
                   ],
                 ),
-              )),
-              
-              pw.SizedBox(height: 40),
-              pw.Footer(
-                title: pw.Text('© DeveloperCat DK ${DateTime.now().year}'),
-              ),
+
+              pw.Spacer(),
+              pw.Center(
+                child: pw.Text('Med venlig hilsen, DeveloperCat DK.', style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey700)),
+              )
             ],
           );
         },
       ),
     );
-    
+
+    // Returnerer PDF som bytes
     return pdf.save();
   }
 
+  // savePdfToStorage forbliver den samme:
   @override
   Future<String> savePdfToStorage(Uint8List pdfBytes, String fileName) async {
     try {

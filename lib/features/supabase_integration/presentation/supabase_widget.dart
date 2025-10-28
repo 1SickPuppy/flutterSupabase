@@ -3,7 +3,7 @@ import '../domain/supabase_service.dart';
 import '../../../core/di/service_locator.dart';
 
 class SupabaseWidget extends StatefulWidget {
-  const SupabaseWidget({Key? key}) : super(key: key);
+  const SupabaseWidget({super.key});
 
   @override
   State<SupabaseWidget> createState() => _SupabaseWidgetState();
