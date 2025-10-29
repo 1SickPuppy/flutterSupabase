@@ -1,51 +1,74 @@
+// lib/features/voice_input/data/voice_input_service_impl.dart
+
 import 'dart:async';
 import 'package:speech_to_text/speech_to_text.dart';
 import '../domain/voice_input_service.dart';
 
-// Implementation af voice input service (følger Single Responsibility Principle)
 class VoiceInputServiceImpl implements VoiceInputService {
-  final SpeechToText _speechToText = SpeechToText();
+  final SpeechToText _speech = SpeechToText();
   final StreamController<String> _textStreamController = StreamController<String>.broadcast();
-  bool _isListening = false;
+  final StreamController<bool> _listeningStatusController = StreamController<bool>.broadcast();
+
+  // Vi bruger kun denne, da den virkede
+  static const String _danishLocaleId = 'da-DK';
 
   @override
-  Future<bool> initialize() async {
-    final available = await _speechToText.initialize(
-      onError: (error) => print('Speech recognition error: $error'),
-      onStatus: (status) {
-        if (status == 'done' || status == 'notListening') {
-          _isListening = false;
-        }
-      },
-    );
-    return available;
-  }
+  Stream<bool> get listeningStatusStream => _listeningStatusController.stream;
+
+  bool _isInitialized = false;
 
   @override
-  Future<void> startListening() async {
-    if (!_isListening) {
-      _isListening = await _speechToText.listen(
-        onResult: (result) {
-          if (result.finalResult) {
-            _textStreamController.add(result.recognizedWords);
-          }
-        },
-        listenFor: const Duration(seconds: 30),
-        pauseFor: const Duration(seconds: 3),
-        localeId: 'da_DK', // Dansk sprog
-      );
-    }
-  }
-
-  @override
-  Future<void> stopListening() async {
-    _isListening = false;
-    await _speechToText.stop();
-  }
+  bool get isListening => _speech.isListening;
 
   @override
   Stream<String> get textStream => _textStreamController.stream;
 
   @override
-  bool get isListening => _isListening;
+  Future<bool> initialize() async {
+    _isInitialized = await _speech.initialize(
+      onStatus: (status) {
+        print('Status: $status');
+        _listeningStatusController.add(_speech.isListening);
+      },
+      onError: (error) => print('Speech to text fejl: ${error.errorMsg}'),
+    );
+
+    // Fjernede al logik for at finde understøttede locales
+    print('SpeechToText initialiseret. Bruger eksplicit sprogkode: $_danishLocaleId');
+    return _isInitialized;
+  }
+
+  @override
+  Future<void> startListening() async {
+    if (!_isInitialized) {
+      print('Fejl: Voice service er ikke initialiseret.');
+      return;
+    }
+
+    _textStreamController.add('');
+
+    await _speech.listen(
+      // ⭐️ Direkte brug af den virkende sprogkode ⭐️
+      localeId: _danishLocaleId,
+
+      onResult: (result) {
+        // Sender ALLE resultater til streamen for realtidsopdatering
+        _textStreamController.add(result.recognizedWords);
+      },
+      listenFor: const Duration(seconds: 30),
+    );
+  }
+
+  @override
+  Future<void> stopListening() async {
+    await _speech.stop();
+  }
+
+  @override
+  void dispose() {
+    _speech.stop();
+    _speech.cancel();
+    _textStreamController.close();
+    _listeningStatusController.close();
+  }
 }

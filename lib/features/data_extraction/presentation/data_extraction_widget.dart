@@ -1,6 +1,8 @@
+// lib\features\data_extraction\presentation\data_extraction_widget.dart
+
 import 'package:flutter/material.dart';
 import '../domain/data_extraction_service.dart';
-import '../../../core/di/service_locator.dart';
+import '../../../core/di/service_locator.dart'; // ⭐️ VIGTIGT: Importerer GetIt-instansen
 
 class DataExtractionWidget extends StatefulWidget {
   const DataExtractionWidget({super.key});
@@ -10,7 +12,8 @@ class DataExtractionWidget extends StatefulWidget {
 }
 
 class _DataExtractionWidgetState extends State<DataExtractionWidget> {
-  final DataExtractionService _dataExtractionService = dataExtractionService;
+  // ⭐️ RETTELSE: Henter service via GetIt i stedet for den udefinerede variabel ⭐️
+  final DataExtractionService _dataExtractionService = getIt<DataExtractionService>();
   final TextEditingController _textController = TextEditingController();
   final TextEditingController _urlController = TextEditingController();
   Map<String, dynamic>? _extractionResult;
@@ -146,9 +149,9 @@ class _DataExtractionWidgetState extends State<DataExtractionWidget> {
                     ),
                     const SizedBox(height: 10),
                     ..._extractionResult!.entries.map((entry) => Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4.0),
-                          child: Text('${entry.key}: ${entry.value}'),
-                        )),
+                      padding: const EdgeInsets.symmetric(vertical: 4.0),
+                      child: Text('${entry.key}: ${entry.value}'),
+                    )),
                     const SizedBox(height: 10),
                     ElevatedButton(
                       onPressed: () {
