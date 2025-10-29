@@ -1,4 +1,8 @@
+// lib/presentation/screens/home_screen.dart
+
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../features/job_flow/job_flow_notifier.dart'; // Importér notifieren
 import '../../features/voice_input/presentation/voice_input_widget.dart';
 import '../../features/data_extraction/presentation/data_extraction_widget.dart';
 import '../../features/pdf_generation/presentation/pdf_generation_widget.dart';
@@ -12,8 +16,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 0;
-  
+  // Fjern den private _selectedIndex variabel herfra, da vi bruger Notifier
+
   final List<Widget> _pages = [
     const VoiceInputWidget(),
     const DataExtractionWidget(),
@@ -23,18 +27,21 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // ⭐️ Lytter til JobFlowNotifier ⭐️
+    final notifier = Provider.of<JobFlowNotifier>(context);
+    final selectedIndex = notifier.selectedIndex;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('DeveloperCat DK'),
       ),
-      body: _pages[_selectedIndex],
+      body: _pages[selectedIndex], // Bruger index fra Notifier
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
-        currentIndex: _selectedIndex,
+        currentIndex: selectedIndex, // Bruger index fra Notifier
         onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
+          // ⭐️ Opdaterer index via Notifier-metoden ⭐️
+          notifier.setSelectedIndex(index);
         },
         items: const [
           BottomNavigationBarItem(

@@ -62,6 +62,7 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget> {
     } else {
       // Fejlhåndtering
       WidgetsBinding.instance.addPostFrameCallback((_) {
+        // ⭐️ RETTELSE: Fjerner Builder herfra for at løse kompileringsfejlen ⭐️
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Fejl: Voice Service kunne ikke initialiseres.')),
@@ -79,14 +80,14 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget> {
     }
   }
 
-  // ⭐️ Fjernet BuildContext fra parameteren, da vi bruger Builder i UI'et ⭐️
   void _analyzeConversation(BuildContext context) {
+    // Dette er den funktionelle logik
     final notifier = Provider.of<JobFlowNotifier>(context, listen: false);
     notifier.extractData(_recognizedText);
 
-    // SnackBar er nu flyttet til ElevatedButton's onPressed
+    // SnackBar kaldes via den lokale kontekst fra knappen
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Samtale sendt til JobFlow for analyse!')),
+      const SnackBar(content: Text('Samtale sendt til JobFlow for analyse.')),
     );
   }
 
@@ -136,11 +137,10 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget> {
           if (_hasTranscription && !isListening)
             Padding(
               padding: const EdgeInsets.only(bottom: 20.0),
-              child: Builder( // ⭐️ Brug Builder her for at få en kontekst UNDER Scafffold'et ⭐️
+              child: Builder( // Denne Builder er VIGTIG og korrekt placeret
                   builder: (innerContext) {
                     return ElevatedButton(
-                      // Kalder nu den rettede metode med den lokale kontekst
-                      onPressed: () => _analyzeConversation(innerContext),
+                      onPressed: () => _analyzeConversation(innerContext), // Bruger den lokale kontekst
                       child: const Text('Analyser samtale'),
                     );
                   }
