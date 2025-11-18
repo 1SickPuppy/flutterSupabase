@@ -1,3 +1,4 @@
+
 # DeveloperCat DK
 
 En Flutter applikation med moduler for voice input, data extraction, PDF generation og Supabase integration.
