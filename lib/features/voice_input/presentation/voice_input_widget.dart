@@ -22,8 +22,8 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget> {
   bool _isListening = false;
   bool _hasTranscription = false;
 
-  late StreamSubscription _textSubscription;
-  late StreamSubscription _statusSubscription;
+  StreamSubscription? _textSubscription;
+  StreamSubscription? _statusSubscription;
 
   @override
   void initState() {
@@ -93,9 +93,12 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget> {
 
   @override
   void dispose() {
-    _voiceInputService.dispose();
-    _textSubscription.cancel();
-    _statusSubscription.cancel();
+    // VIGTIGT: Kalder IKKE _voiceInputService.dispose()
+    // fordi servicen er en singleton i GetIt og bliver genbrugt
+    // Vi stopper kun lytning og unsubscriber fra streams
+    _voiceInputService.stopListening();
+    _textSubscription?.cancel();
+    _statusSubscription?.cancel();
     super.dispose();
   }
 

@@ -40,23 +40,47 @@ class VoiceInputServiceImpl implements VoiceInputService {
 
   @override
   Future<void> startListening() async {
+    print('DEBUG: startListening kaldt');
+
     if (!_isInitialized) {
       print('Fejl: Voice service er ikke initialiseret.');
       return;
     }
 
+    print('DEBUG: Service er initialiseret, starter lytning');
     _textStreamController.add('');
 
-    await _speech.listen(
-      // ⭐️ Direkte brug af den virkende sprogkode ⭐️
-      localeId: _danishLocaleId,
+    try {
+      await _speech.listen(
+        // ⭐️ Direkte brug af den virkende sprogkode ⭐️
+        localeId: _danishLocaleId,
 
-      onResult: (result) {
-        // Sender ALLE resultater til streamen for realtidsopdatering
-        _textStreamController.add(result.recognizedWords);
-      },
-      listenFor: const Duration(seconds: 30),
-    );
+        onResult: (result) {
+          print('DEBUG: Modtog resultat: ${result.recognizedWords}');
+          print('DEBUG: Is final: ${result.finalResult}');
+          // Sender ALLE resultater til streamen for realtidsopdatering
+          _textStreamController.add(result.recognizedWords);
+        },
+
+        // Lyt i op til 60 sekunder
+        listenFor: const Duration(seconds: 60),
+
+        // VIGTIGT: Vent længere tid før stop ved stilhed (15 sekunder)
+        pauseFor: const Duration(seconds: 15),
+
+        // Vis partial/interim resultater mens der tales
+        partialResults: true,
+
+        // Fortsæt lytning efter første resultat
+        listenMode: ListenMode.confirmation,
+
+        // Stop IKKE automatisk på fejl
+        cancelOnError: false,
+      );
+      print('DEBUG: Listen kommando sendt');
+    } catch (e) {
+      print('DEBUG: Fejl ved start af lytning: $e');
+    }
   }
 
   @override

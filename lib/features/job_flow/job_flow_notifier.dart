@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import '../voice_input/domain/voice_input_service.dart';
 import '../data_extraction/domain/data_extraction_service.dart';
 import '../pdf_generation/domain/pdf_generation_service.dart';
+import '../../models/job_analysis_model.dart';
 // import '../supabase_integration/domain/supabase_service.dart';
 
 class JobFlowNotifier extends ChangeNotifier {
@@ -16,9 +17,24 @@ class JobFlowNotifier extends ChangeNotifier {
   int _selectedIndex = 0;
   int get selectedIndex => _selectedIndex;
 
-  // ⭐️ Ny State 2: Gem de udtrukne data ⭐️
-  String _extractedData = '';
-  String get extractedData => _extractedData;
+  // ⭐️ Ny State 2: Gem de udtrukne data som JobAnalysisModel ⭐️
+  JobAnalysisModel? _jobAnalysis;
+  JobAnalysisModel? get jobAnalysis => _jobAnalysis;
+
+  // Loading states
+  bool _isExtracting = false;
+  bool get isExtracting => _isExtracting;
+
+  bool _isGeneratingPdf = false;
+  bool get isGeneratingPdf => _isGeneratingPdf;
+
+  // Error state
+  String? _errorMessage;
+  String? get errorMessage => _errorMessage;
+
+  // PDF path after generation
+  String? _pdfPath;
+  String? get pdfPath => _pdfPath;
 
   // Constructor
   JobFlowNotifier(
@@ -40,26 +56,79 @@ class JobFlowNotifier extends ChangeNotifier {
     print('Notifier modtog tekst til analyse: $text');
 
     if (text.isEmpty) {
+      _errorMessage = 'Ingen tekst at analysere';
+      notifyListeners();
       return;
     }
 
-    // For nu simulerer vi et resultat
-    _extractedData = 'Data udtrukket fra samtalen: "$text"';
-
-    // ⭐️ VIGTIGT: Skift til Data-fanen (index 1) for at vise resultatet ⭐️
-    _selectedIndex = 1;
-
+    // Start loading
+    _isExtracting = true;
+    _errorMessage = null;
     notifyListeners();
 
-    // Senere, når du implementerer DataExtractionService:
-    // try {
-    //   final result = await _dataExtractionService.extractDataFromText(text);
-    //   _extractedData = result; // Antager at servicen returnerer en streng
-    //   _selectedIndex = 1;
-    //   notifyListeners();
-    // } catch (e) {
-    //   print('Fejl under dataudtræk: $e');
-    // }
+    try {
+      // Kald data extraction service
+      final result = await _dataExtractionService.extractDataFromText(text);
+
+      // Parse result til JobAnalysisModel
+      _jobAnalysis = JobAnalysisModel.fromJson(result);
+
+      // ⭐️ VIGTIGT: Skift til Data-fanen (index 1) for at vise resultatet ⭐️
+      _selectedIndex = 1;
+
+      print('Data extraction successful: ${_jobAnalysis?.customerName}');
+    } catch (e) {
+      _errorMessage = 'Fejl under dataudtræk: $e';
+      print('Fejl under dataudtræk: $e');
+    } finally {
+      _isExtracting = false;
+      notifyListeners();
+    }
+  }
+
+  // --- Implementering af 'generatePdf' metode ---
+  Future<void> generatePdf() async {
+    if (_jobAnalysis == null) {
+      _errorMessage = 'Ingen data at generere PDF fra';
+      notifyListeners();
+      return;
+    }
+
+    _isGeneratingPdf = true;
+    _errorMessage = null;
+    _pdfPath = null;
+    notifyListeners();
+
+    try {
+      final result = await _pdfGenerationService.generatePdf(_jobAnalysis!.toJson());
+
+      if (result['success'] == true) {
+        _pdfPath = result['path'];
+        print('PDF genereret: $_pdfPath');
+      } else {
+        _errorMessage = result['error'] ?? 'Ukendt fejl ved PDF generering';
+      }
+    } catch (e) {
+      _errorMessage = 'Fejl ved PDF generering: $e';
+      print('Fejl ved PDF generering: $e');
+    } finally {
+      _isGeneratingPdf = false;
+      notifyListeners();
+    }
+  }
+
+  // --- Metode til at rydde data ---
+  void clearData() {
+    _jobAnalysis = null;
+    _errorMessage = null;
+    _pdfPath = null;
+    notifyListeners();
+  }
+
+  // --- Metode til at opdatere job analysis (til editing) ---
+  void updateJobAnalysis(JobAnalysisModel updatedModel) {
+    _jobAnalysis = updatedModel;
+    notifyListeners();
   }
 
 }

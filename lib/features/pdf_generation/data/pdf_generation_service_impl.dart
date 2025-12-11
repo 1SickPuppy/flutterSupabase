@@ -38,7 +38,7 @@ class PdfGenerationServiceImpl implements PdfGenerationService {
             children: [
               pw.Text(
                 'Tilbud: ${data['job']}',
-                style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold),
+                style: const pw.TextStyle(fontSize: 24),
               ),
               pw.SizedBox(height: 20),
 
@@ -52,7 +52,7 @@ class PdfGenerationServiceImpl implements PdfGenerationService {
               pw.Divider(),
               pw.Text(
                 'Opgavebeskrivelse:',
-                style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                style: const pw.TextStyle(fontSize: 14),
               ),
               pw.Text(data['assignment'] as String),
               pw.SizedBox(height: 20),
@@ -61,7 +61,7 @@ class PdfGenerationServiceImpl implements PdfGenerationService {
               pw.Divider(),
               pw.Text(
                 'Materialer & Estimat:',
-                style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                style: const pw.TextStyle(fontSize: 14),
               ),
               pw.Table.fromTextArray(
                 context: context,
@@ -79,7 +79,7 @@ class PdfGenerationServiceImpl implements PdfGenerationService {
                   <String>['', '', 'TOTAL (DKK)', _currencyFormat.format(totalEstimate)],
                 ],
                 cellStyle: const pw.TextStyle(fontSize: 10),
-                headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10),
+                headerStyle: const pw.TextStyle(fontSize: 11),
                 border: null,
               ),
 
@@ -91,7 +91,7 @@ class PdfGenerationServiceImpl implements PdfGenerationService {
                   children: [
                     pw.Text(
                       'Noter:',
-                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                      style: const pw.TextStyle(fontSize: 14),
                     ),
                     pw.Text(data['notes'] as String),
                   ],
@@ -121,6 +121,34 @@ class PdfGenerationServiceImpl implements PdfGenerationService {
       return file.path;
     } catch (e) {
       throw Exception('Kunne ikke gemme PDF: ${e.toString()}');
+    }
+  }
+
+  // Convenience metode der kombinerer generering og gemning
+  @override
+  Future<Map<String, dynamic>> generatePdf(Map<String, dynamic> data) async {
+    try {
+      // Genererer PDF bytes
+      final pdfBytes = await generatePdfFromData(data);
+
+      // Laver filnavn baseret på kundenavn og timestamp
+      final customerName = data['customerName'] as String? ?? 'kunde';
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final fileName = 'tilbud_${customerName.replaceAll(' ', '_')}_$timestamp.pdf';
+
+      // Gemmer til storage
+      final path = await savePdfToStorage(pdfBytes, fileName);
+
+      return {
+        'success': true,
+        'path': path,
+        'fileName': fileName,
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'error': 'Fejl ved PDF generering: ${e.toString()}',
+      };
     }
   }
 }
