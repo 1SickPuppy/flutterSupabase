@@ -1,11 +1,13 @@
 // lib/features/pdf_generation/data/pdf_generation_service_impl.dart
 
-import 'dart:io';
 import 'dart:typed_data';
+import 'dart:io';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:intl/intl.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path_provider/path_provider.dart';
-import 'package:intl/intl.dart'; // ⭐️ VIGTIGT: Tilføj denne import! ⭐️
+import 'package:universal_html/html.dart' as html;
 
 import '../../pdf_generation/domain/pdf_generation_service.dart';
 
@@ -19,14 +21,25 @@ class PdfGenerationServiceImpl implements PdfGenerationService {
     decimalDigits: 2,
   );
 
+  // Helper function to remove Danish characters for PDF compatibility
+  String _sanitizeText(String text) {
+    return text
+        .replaceAll('æ', 'ae')
+        .replaceAll('ø', 'o')
+        .replaceAll('å', 'aa')
+        .replaceAll('Æ', 'AE')
+        .replaceAll('Ø', 'O')
+        .replaceAll('Å', 'AA');
+  }
+
   @override
   Future<Uint8List> generatePdfFromData(Map<String, dynamic> data) async {
     final pdf = pw.Document();
 
-    // Henter data fra Map
+    // Henter data fra Map og saniterer for PDF
     final List<dynamic> parts = data['partsNeeded'] as List<dynamic>;
     final double totalEstimate = data['totalEstimate'] as double;
-    final String customerName = data['customerName'] as String;
+    final String customerName = _sanitizeText(data['customerName'] as String);
 
     // --- Bygger PDF-dokumentets struktur (Med Valuta og Tabel) ---
     pdf.addPage(
@@ -36,70 +49,53 @@ class PdfGenerationServiceImpl implements PdfGenerationService {
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              pw.Text(
-                'Tilbud: ${data['job']}',
-                style: const pw.TextStyle(fontSize: 24),
-              ),
-              pw.SizedBox(height: 20),
+              pw.Text('TILBUD: ${_sanitizeText(data['job'] as String)}'),
+              pw.Text(''),
+              pw.Text(''),
 
               // --- Kundedetaljer ---
               pw.Text('Kundenavn: $customerName'),
-              pw.Text('Adresse: ${data['address']}'),
+              pw.Text('Adresse: ${_sanitizeText(data['address'] as String)}'),
               pw.Text('Tlf: ${data['phone']} | Email: ${data['email']}'),
-              pw.SizedBox(height: 20),
+              pw.Text(''),
+              pw.Text(''),
 
               // --- Opgavebeskrivelse ---
               pw.Divider(),
-              pw.Text(
-                'Opgavebeskrivelse:',
-                style: const pw.TextStyle(fontSize: 14),
-              ),
-              pw.Text(data['assignment'] as String),
-              pw.SizedBox(height: 20),
+              pw.Text('Opgavebeskrivelse:'),
+              pw.Text(_sanitizeText(data['assignment'] as String)),
+              pw.Text(''),
+              pw.Text(''),
 
-              // --- Dele og Estimater (Tabel) ---
+              // --- Dele og Estimater (Simple list instead of table) ---
               pw.Divider(),
-              pw.Text(
-                'Materialer & Estimat:',
-                style: const pw.TextStyle(fontSize: 14),
-              ),
-              pw.Table.fromTextArray(
-                context: context,
-                data: <List<String>>[
-                  <String>['Vare', 'Antal', 'Pris pr. stk.', 'Total'],
-                  ...parts.map((p) => [
-                    p['name'] as String,
-                    '1',
-                    _currencyFormat.format(p['price']), // ⭐️ Formatering her
-                    _currencyFormat.format(p['price']),
-                  ]),
-                  // Mock Arbejdsløn
-                  <String>['Arbejdsløn (Estimeret)', '', '', _currencyFormat.format(1500.0)],
-                  // Total
-                  <String>['', '', 'TOTAL (DKK)', _currencyFormat.format(totalEstimate)],
-                ],
-                cellStyle: const pw.TextStyle(fontSize: 10),
-                headerStyle: const pw.TextStyle(fontSize: 11),
-                border: null,
-              ),
+              pw.Text('Materialer & Estimat:'),
+              pw.Text(''),
+              pw.Text('Vare | Antal | Pris pr. stk. | Total'),
+              pw.Divider(),
+              ...parts.map((p) => pw.Text(
+                '${_sanitizeText(p['name'] as String)} | 1 | ${(p['price'] as num).toStringAsFixed(2)} kr | ${(p['price'] as num).toStringAsFixed(2)} kr'
+              )),
+              pw.Text(''),
+              pw.Text('Arbejdslon (Estimeret) | | | ${1500.0.toStringAsFixed(2)} kr'),
+              pw.Divider(),
+              pw.Text('TOTAL (DKK): ${totalEstimate.toStringAsFixed(2)} kr'),
 
               // --- Noter ---
-              pw.SizedBox(height: 30),
+              pw.Text(''),
+              pw.Text(''),
               if (data['notes'] != null && (data['notes'] as String).isNotEmpty)
                 pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
-                    pw.Text(
-                      'Noter:',
-                      style: const pw.TextStyle(fontSize: 14),
-                    ),
-                    pw.Text(data['notes'] as String),
+                    pw.Text('Noter:'),
+                    pw.Text(_sanitizeText(data['notes'] as String)),
                   ],
                 ),
 
               pw.Spacer(),
               pw.Center(
-                child: pw.Text('Med venlig hilsen, DeveloperCat DK.', style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey700)),
+                child: pw.Text('Med venlig hilsen, DeveloperCat DK.'),
               )
             ],
           );
@@ -111,14 +107,25 @@ class PdfGenerationServiceImpl implements PdfGenerationService {
     return pdf.save();
   }
 
-  // savePdfToStorage forbliver den samme:
   @override
   Future<String> savePdfToStorage(Uint8List pdfBytes, String fileName) async {
     try {
-      final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/$fileName');
-      await file.writeAsBytes(pdfBytes);
-      return file.path;
+      if (kIsWeb) {
+        // Web: Trigger browser download using universal_html
+        final blob = html.Blob([pdfBytes], 'application/pdf');
+        final url = html.Url.createObjectUrlFromBlob(blob);
+        final anchor = html.AnchorElement(href: url)
+          ..setAttribute('download', fileName)
+          ..click();
+        html.Url.revokeObjectUrl(url);
+        return 'Downloaded: $fileName';
+      } else {
+        // Mobile: Save to file system
+        final directory = await getApplicationDocumentsDirectory();
+        final file = File('${directory.path}/$fileName');
+        await file.writeAsBytes(pdfBytes);
+        return file.path;
+      }
     } catch (e) {
       throw Exception('Kunne ikke gemme PDF: ${e.toString()}');
     }

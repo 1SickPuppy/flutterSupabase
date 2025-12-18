@@ -29,8 +29,9 @@ class DataExtractionServiceImpl implements DataExtractionService {
 
     try {
       // Initialiser Gemini model
+      // Using Gemini 2.5 Flash - fast, efficient, free tier available
       final model = GenerativeModel(
-        model: 'gemini-1.5-flash',
+        model: 'gemini-2.5-flash',
         apiKey: _apiKey,
       );
 

@@ -207,9 +207,9 @@ Configured for Danish speech recognition:
 
 ### AI Data Extraction Service
 
-Uses Google Gemini 1.5 Flash for intelligent data extraction:
-- Model: `gemini-1.5-flash`
-- Package: `google_generative_ai ^0.4.6`
+Uses Google Gemini for intelligent data extraction:
+- Model: `gemini-2.5-flash` (free tier available, up to 1M token context)
+- Package: `google_generative_ai ^0.4.7`
 - Extracts: customer name, phone, email, address, job type, materials, prices, dates
 - Generates realistic Danish pricing estimates (incl. labor 400-800 kr/hour)
 - Fallback to mock data if API key missing or request fails
