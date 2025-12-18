@@ -22,6 +22,16 @@ DeveloperCat DK is a Danish-language Flutter application for voice-based busines
 ## Recommended Development Workflow
 
 **For Active Development** (Start here! 🚀):
+
+**Quick Start (Recommended):**
+```bash
+# Easy shortcut - automatically loads API keys from .env file
+./run.sh          # Runs on Chrome (default)
+./run.sh chrome   # Explicitly run on Chrome
+./run.sh android  # Run on Android emulator (when fixed)
+```
+
+**Manual Start:**
 ```bash
 # Run in Chrome for fast development with hot reload
 flutter run -d chrome
@@ -36,10 +46,17 @@ flutter run -d chrome \
   --dart-define=GEMINI_API_KEY=<your_gemini_api_key>
 ```
 
-**Get Gemini API Key**:
-1. Visit https://makersuite.google.com/app/apikey
-2. Create a new API key
-3. Use it with `--dart-define=GEMINI_API_KEY=<key>`
+**Environment Setup**:
+1. Create a `.env` file in the project root:
+```bash
+GEMINI_API_KEY=your_gemini_api_key_here
+SUPABASE_URL=your_supabase_url_here
+SUPABASE_ANON_KEY=your_supabase_anon_key_here
+```
+
+2. Get Gemini API Key from https://makersuite.google.com/app/apikey
+3. Get Supabase credentials from your Supabase project dashboard
+4. Run with `./run.sh` - it automatically loads the .env file!
 
 **For Mobile Testing** (when Android is fixed):
 ```bash
@@ -253,13 +270,23 @@ Implementation: `lib/features/pdf_generation/data/pdf_generation_service_impl.da
 - ✅ Fixed PDF Unicode support (removed fontWeight dependencies)
 - ✅ Real-time transcription display in notes field
 
+### Completed in Fase 3
+- ✅ Google Gemini 2.5 Flash integration (free tier, 1M token context)
+- ✅ Web platform PDF generation with auto-download
+- ✅ Danish character sanitization for PDF compatibility (æ→ae, ø→o, å→aa)
+- ✅ Cross-platform support via universal_html package
+- ✅ Fixed all model compatibility issues with Gemini API
+
 ## Important File References
 
 - Entry point: `lib/main.dart`
+- Quick run script: `run.sh` (loads .env and runs app)
 - DI setup: `lib/core/di/service_locator.dart`
 - State orchestration: `lib/features/job_flow/job_flow_notifier.dart`
 - Main data model: `lib/models/job_analysis_model.dart`
 - Home navigation: `lib/presentation/screens/home_screen.dart`
+- AI extraction: `lib/features/data_extraction/data/data_extraction_service_impl.dart`
+- PDF generation: `lib/features/pdf_generation/data/pdf_generation_service_impl.dart`
 
 ## Testing
 
