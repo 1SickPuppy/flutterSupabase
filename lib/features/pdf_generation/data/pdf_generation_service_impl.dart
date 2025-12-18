@@ -41,6 +41,14 @@ class PdfGenerationServiceImpl implements PdfGenerationService {
     final double totalEstimate = data['totalEstimate'] as double;
     final String customerName = _sanitizeText(data['customerName'] as String);
 
+    // Sanitize all text to avoid Unicode issues
+    final String job = _sanitizeText(data['job'] as String);
+    final String address = _sanitizeText(data['address'] as String);
+    final String phone = data['phone'] as String;
+    final String email = data['email'] as String;
+    final String assignment = _sanitizeText(data['assignment'] as String);
+    final String notes = data['notes'] != null ? _sanitizeText(data['notes'] as String) : '';
+
     // --- Bygger PDF-dokumentets struktur (Med Valuta og Tabel) ---
     pdf.addPage(
       pw.Page(
@@ -49,54 +57,52 @@ class PdfGenerationServiceImpl implements PdfGenerationService {
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              pw.Text('TILBUD: ${_sanitizeText(data['job'] as String)}'),
+              pw.Text('TILBUD: $job'),
               pw.Text(''),
               pw.Text(''),
 
               // --- Kundedetaljer ---
               pw.Text('Kundenavn: $customerName'),
-              pw.Text('Adresse: ${_sanitizeText(data['address'] as String)}'),
-              pw.Text('Tlf: ${data['phone']} | Email: ${data['email']}'),
+              pw.Text('Adresse: $address'),
+              pw.Text('Tlf: $phone | Email: $email'),
               pw.Text(''),
               pw.Text(''),
 
               // --- Opgavebeskrivelse ---
-              pw.Divider(),
+              pw.Text('----------------------------------------'),
               pw.Text('Opgavebeskrivelse:'),
-              pw.Text(_sanitizeText(data['assignment'] as String)),
+              pw.Text(assignment),
               pw.Text(''),
               pw.Text(''),
 
               // --- Dele og Estimater (Simple list instead of table) ---
-              pw.Divider(),
+              pw.Text('----------------------------------------'),
               pw.Text('Materialer & Estimat:'),
               pw.Text(''),
               pw.Text('Vare | Antal | Pris pr. stk. | Total'),
-              pw.Divider(),
+              pw.Text('----------------------------------------'),
               ...parts.map((p) => pw.Text(
                 '${_sanitizeText(p['name'] as String)} | 1 | ${(p['price'] as num).toStringAsFixed(2)} kr | ${(p['price'] as num).toStringAsFixed(2)} kr'
               )),
               pw.Text(''),
               pw.Text('Arbejdslon (Estimeret) | | | ${1500.0.toStringAsFixed(2)} kr'),
-              pw.Divider(),
+              pw.Text('========================================'),
               pw.Text('TOTAL (DKK): ${totalEstimate.toStringAsFixed(2)} kr'),
 
               // --- Noter ---
               pw.Text(''),
               pw.Text(''),
-              if (data['notes'] != null && (data['notes'] as String).isNotEmpty)
+              if (notes.isNotEmpty)
                 pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
                     pw.Text('Noter:'),
-                    pw.Text(_sanitizeText(data['notes'] as String)),
+                    pw.Text(notes),
                   ],
                 ),
 
-              pw.Spacer(),
-              pw.Center(
-                child: pw.Text('Med venlig hilsen, DeveloperCat DK.'),
-              )
+              pw.SizedBox(height: 50),
+              pw.Text('              Med venlig hilsen, DeveloperCat DK.')
             ],
           );
         },
@@ -138,8 +144,8 @@ class PdfGenerationServiceImpl implements PdfGenerationService {
       // Genererer PDF bytes
       final pdfBytes = await generatePdfFromData(data);
 
-      // Laver filnavn baseret på kundenavn og timestamp
-      final customerName = data['customerName'] as String? ?? 'kunde';
+      // Laver filnavn baseret på kundenavn og timestamp (sanitized for file system)
+      final customerName = _sanitizeText(data['customerName'] as String? ?? 'kunde');
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final fileName = 'tilbud_${customerName.replaceAll(' ', '_')}_$timestamp.pdf';
 
