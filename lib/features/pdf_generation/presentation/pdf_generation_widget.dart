@@ -4,9 +4,72 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../job_flow/job_flow_notifier.dart';
+import '../../../core/di/service_locator.dart';
+import '../../quote/domain/quote_service.dart';
 
 class PdfGenerationWidget extends StatelessWidget {
   const PdfGenerationWidget({super.key});
+
+  Future<void> _sendQuote(BuildContext context, JobFlowNotifier notifier) async {
+    final quoteService = getIt<QuoteService>();
+
+    // Show date picker for proposed date
+    final DateTime? proposedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now().add(const Duration(days: 7)),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+      helpText: 'Vælg foreslået dato for arbejdet',
+      locale: const Locale('da', 'DK'),
+    );
+
+    if (proposedDate == null || !context.mounted) return;
+
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+
+    try {
+      final result = await quoteService.sendQuote(
+        jobAnalysis: notifier.jobAnalysis!,
+        proposedDate: proposedDate,
+        pdfPath: notifier.pdfPath,
+      );
+
+      if (!context.mounted) return;
+      Navigator.of(context).pop(); // Close loading dialog
+
+      if (result['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Tilbud sendt! Email klient åbnet.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Fejl: ${result['error']}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!context.mounted) return;
+      Navigator.of(context).pop(); // Close loading dialog
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Fejl ved afsendelse: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -112,10 +175,25 @@ class PdfGenerationWidget extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 30),
-                    ElevatedButton.icon(
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('Generer Ny PDF'),
-                      onPressed: () => notifier.generatePdf(),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ElevatedButton.icon(
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('Generer Ny PDF'),
+                          onPressed: () => notifier.generatePdf(),
+                        ),
+                        const SizedBox(width: 16),
+                        ElevatedButton.icon(
+                          icon: const Icon(Icons.send),
+                          label: const Text('Send Tilbud'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            foregroundColor: Colors.white,
+                          ),
+                          onPressed: () => _sendQuote(context, notifier),
+                        ),
+                      ],
                     ),
                   ],
                 ),
