@@ -3,10 +3,102 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import '../../../core/di/service_locator.dart';
+import '../../../core/auth/auth_notifier.dart';
 import '../../job_flow/job_flow_notifier.dart';
+import '../../supabase_integration/domain/supabase_service.dart';
 
-class DataExtractionWidget extends StatelessWidget {
+class DataExtractionWidget extends StatefulWidget {
   const DataExtractionWidget({super.key});
+
+  @override
+  State<DataExtractionWidget> createState() => _DataExtractionWidgetState();
+}
+
+class _DataExtractionWidgetState extends State<DataExtractionWidget> {
+  bool _isSaving = false;
+
+  Future<void> _saveToSupabase() async {
+    final authNotifier = Provider.of<AuthNotifier>(context, listen: false);
+    final notifier = Provider.of<JobFlowNotifier>(context, listen: false);
+    final jobAnalysis = notifier.jobAnalysis;
+    final isEditing = notifier.isEditingExistingJob;
+    final editingJobId = notifier.editingJobId;
+
+    // Check if user is authenticated
+    if (!authNotifier.isAuthenticated) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Du skal være logget ind for at gemme'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      // Navigate to Supabase tab to log in
+      notifier.setSelectedIndex(3);
+      return;
+    }
+
+    // Check if there's data to save
+    if (jobAnalysis == null) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ingen data at gemme')),
+      );
+      return;
+    }
+
+    setState(() => _isSaving = true);
+
+    try {
+      final supabaseService = getIt<SupabaseService>();
+      final jobData = jobAnalysis.toJson();
+      jobData['user_email'] = authNotifier.userEmail;
+
+      Map<String, dynamic> result;
+
+      if (isEditing && editingJobId != null) {
+        // Update existing job
+        jobData['updated_at'] = DateTime.now().toIso8601String();
+        result = await supabaseService.updateData('job_analyses', editingJobId, jobData);
+      } else {
+        // Create new job
+        jobData['created_at'] = DateTime.now().toIso8601String();
+        result = await supabaseService.insertData('job_analyses', jobData);
+      }
+
+      if (!mounted) return;
+
+      setState(() => _isSaving = false);
+
+      if (result['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(isEditing ? 'Job opdateret!' : 'Job gemt til Supabase!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        // Navigate to Supabase tab to view saved jobs
+        notifier.setSelectedIndex(3);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Fejl: ${result['error']}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isSaving = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Fejl ved gemning: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,6 +106,7 @@ class DataExtractionWidget extends StatelessWidget {
     final jobAnalysis = notifier.jobAnalysis;
     final isExtracting = notifier.isExtracting;
     final errorMessage = notifier.errorMessage;
+    final isEditing = notifier.isEditingExistingJob;
 
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -261,17 +354,27 @@ class DataExtractionWidget extends StatelessWidget {
                         const SizedBox(width: 12),
                         Expanded(
                           child: ElevatedButton.icon(
-                            icon: const Icon(Icons.cloud_upload),
-                            label: const Text('Gem til Supabase'),
+                            icon: _isSaving
+                                ? const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : Icon(isEditing ? Icons.update : Icons.cloud_upload),
+                            label: Text(
+                              _isSaving
+                                  ? (isEditing ? 'Opdaterer...' : 'Gemmer...')
+                                  : (isEditing ? 'Opdater i Supabase' : 'Gem til Supabase')
+                            ),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green,
+                              backgroundColor: isEditing ? Colors.orange : Colors.green,
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 12),
                             ),
-                            onPressed: () {
-                              // TODO: Implement Supabase save
-                              notifier.setSelectedIndex(3);
-                            },
+                            onPressed: _isSaving ? null : _saveToSupabase,
                           ),
                         ),
                       ],

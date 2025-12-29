@@ -7,6 +7,7 @@ import '../../features/voice_input/presentation/voice_input_widget.dart';
 import '../../features/data_extraction/presentation/data_extraction_widget.dart';
 import '../../features/pdf_generation/presentation/pdf_generation_widget.dart';
 import '../../features/supabase_integration/presentation/supabase_widget.dart';
+import '../../features/customer_management/presentation/customer_list_widget.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -23,6 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
     const DataExtractionWidget(),
     const PdfGenerationWidget(),
     const SupabaseWidget(),
+    const CustomerListWidget(),
   ];
 
   @override
@@ -59,6 +61,10 @@ class _HomeScreenState extends State<HomeScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.cloud),
             label: 'Supabase',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.people),
+            label: 'Kunder',
           ),
         ],
       ),

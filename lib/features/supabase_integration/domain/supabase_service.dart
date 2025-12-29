@@ -6,4 +6,6 @@ abstract class SupabaseService {
   Future<Map<String, dynamic>> getCurrentUser();
   Future<List<Map<String, dynamic>>> getData(String tableName);
   Future<Map<String, dynamic>> insertData(String tableName, Map<String, dynamic> data);
+  Future<Map<String, dynamic>> updateData(String tableName, String id, Map<String, dynamic> data);
+  Future<Map<String, dynamic>> deleteData(String tableName, String id);
 }

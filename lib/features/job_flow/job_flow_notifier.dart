@@ -21,6 +21,11 @@ class JobFlowNotifier extends ChangeNotifier {
   JobAnalysisModel? _jobAnalysis;
   JobAnalysisModel? get jobAnalysis => _jobAnalysis;
 
+  // Track if we're editing an existing job (for update vs create)
+  String? _editingJobId;
+  String? get editingJobId => _editingJobId;
+  bool get isEditingExistingJob => _editingJobId != null;
+
   // Loading states
   bool _isExtracting = false;
   bool get isExtracting => _isExtracting;
@@ -120,6 +125,7 @@ class JobFlowNotifier extends ChangeNotifier {
   // --- Metode til at rydde data ---
   void clearData() {
     _jobAnalysis = null;
+    _editingJobId = null;
     _errorMessage = null;
     _pdfPath = null;
     notifyListeners();
@@ -129,6 +135,21 @@ class JobFlowNotifier extends ChangeNotifier {
   void updateJobAnalysis(JobAnalysisModel updatedModel) {
     _jobAnalysis = updatedModel;
     notifyListeners();
+  }
+
+  // --- Metode til at indlæse et gemt job analysis for redigering ---
+  void loadJobAnalysis(JobAnalysisModel job, {String? jobId}) {
+    _jobAnalysis = job;
+    _editingJobId = jobId;
+    _errorMessage = null;
+    _pdfPath = null;
+
+    // Switch to Data tab to view the loaded job
+    _selectedIndex = 1;
+
+    notifyListeners();
+
+    print('Job loaded for editing: ${job.customerName} (ID: $jobId)');
   }
 
 }

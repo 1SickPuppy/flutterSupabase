@@ -36,10 +36,14 @@ dependencies:
   
   # Supabase integration
   supabase_flutter: ^2.10.3
-  
+
   # Secure storage
   flutter_secure_storage: ^10.0.0-beta.4
   encrypt: ^5.0.1
+
+  # CSV import & Calendar
+  csv: ^6.0.0
+  table_calendar: ^3.1.2
 
   get_it: any
   intl: any
@@ -59,3 +63,4 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
+    - developercatfiles/

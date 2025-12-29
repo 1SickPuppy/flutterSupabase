@@ -7,6 +7,7 @@ import 'package:get_it/get_it.dart';
 
 // --- Core Services & Notifiers ---
 import 'core/di/service_locator.dart';
+import 'core/auth/auth_notifier.dart';
 import 'features/job_flow/job_flow_notifier.dart';
 
 // --- Interfaces (Brugt i GetIt kald) ---
@@ -32,20 +33,19 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        // 1. JobFlowNotifier (DEN VIGTIGSTE)
+        // 1. AuthNotifier - Global authentication state
+        ChangeNotifierProvider<AuthNotifier>(
+          create: (_) => AuthNotifier(),
+        ),
+
+        // 2. JobFlowNotifier - Job workflow orchestration
         ChangeNotifierProvider<JobFlowNotifier>(
           create: (_) => JobFlowNotifier(
             getIt<VoiceInputService>(),
             getIt<DataExtractionService>(),
             getIt<PdfGenerationService>(),
-            // getIt<SupabaseService>(), // Tilføj når den er implementeret
           ),
         ),
-
-        // ❌ Secure Storage Provider ER FJERNET HER ❌
-        // Den skal KUN hentes via GetIt, da den er en Core/Data service.
-
-        // Andre providers her (f.eks. AuthenticationNotifier)
       ],
       child: const App(),
     ),

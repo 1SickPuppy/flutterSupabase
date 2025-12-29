@@ -95,10 +95,52 @@ class SupabaseServiceImpl implements SupabaseService {
           .insert(data)
           .select()
           .single();
-      
+
       return {
         'success': true,
         'data': response,
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'error': e.toString(),
+      };
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> updateData(String tableName, String id, Map<String, dynamic> data) async {
+    try {
+      final response = await _supabase
+          .from(tableName)
+          .update(data)
+          .eq('id', id)
+          .select()
+          .single();
+
+      return {
+        'success': true,
+        'data': response,
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'error': e.toString(),
+      };
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> deleteData(String tableName, String id) async {
+    try {
+      await _supabase
+          .from(tableName)
+          .delete()
+          .eq('id', id);
+
+      return {
+        'success': true,
+        'message': 'Data slettet succesfuldt',
       };
     } catch (e) {
       return {

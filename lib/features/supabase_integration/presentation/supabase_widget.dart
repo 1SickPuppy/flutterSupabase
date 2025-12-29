@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/di/service_locator.dart';
+import '../../../core/auth/auth_notifier.dart';
+import '../../../models/job_analysis_model.dart';
 import '../domain/supabase_service.dart';
 import '../../job_flow/job_flow_notifier.dart';
 
@@ -20,8 +22,6 @@ class _SupabaseWidgetState extends State<SupabaseWidget> {
   final _passwordController = TextEditingController();
 
   bool _isLoading = false;
-  bool _isLoggedIn = false;
-  String? _userEmail;
   String? _errorMessage;
 
   List<Map<String, dynamic>> _savedJobs = [];
@@ -31,7 +31,14 @@ class _SupabaseWidgetState extends State<SupabaseWidget> {
   void initState() {
     super.initState();
     _supabaseService = getIt<SupabaseService>();
-    _checkCurrentUser();
+
+    // Load jobs if already authenticated
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authNotifier = Provider.of<AuthNotifier>(context, listen: false);
+      if (authNotifier.isAuthenticated) {
+        _loadJobs();
+      }
+    });
   }
 
   @override
@@ -39,19 +46,6 @@ class _SupabaseWidgetState extends State<SupabaseWidget> {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
-  }
-
-  Future<void> _checkCurrentUser() async {
-    setState(() => _isLoading = true);
-    final result = await _supabaseService.getCurrentUser();
-    setState(() {
-      _isLoading = false;
-      if (result['success'] == true) {
-        _isLoggedIn = true;
-        _userEmail = result['user']?['email'];
-        _loadJobs();
-      }
-    });
   }
 
   Future<void> _signIn() async {
@@ -73,10 +67,8 @@ class _SupabaseWidgetState extends State<SupabaseWidget> {
     setState(() {
       _isLoading = false;
       if (result['success'] == true) {
-        _isLoggedIn = true;
-        _userEmail = result['user']?['email'];
         _errorMessage = null;
-        _loadJobs();
+        _loadJobs(); // AuthNotifier will automatically update isAuthenticated
       } else {
         _errorMessage = result['error'];
       }
@@ -102,12 +94,11 @@ class _SupabaseWidgetState extends State<SupabaseWidget> {
     setState(() {
       _isLoading = false;
       if (result['success'] == true) {
-        _isLoggedIn = true;
-        _userEmail = result['user']?['email'];
         _errorMessage = null;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Konto oprettet! Tjek din email for verifikation.')),
         );
+        // AuthNotifier will automatically update isAuthenticated
       } else {
         _errorMessage = result['error'];
       }
@@ -119,12 +110,11 @@ class _SupabaseWidgetState extends State<SupabaseWidget> {
     await _supabaseService.signOut();
     setState(() {
       _isLoading = false;
-      _isLoggedIn = false;
-      _userEmail = null;
       _savedJobs = [];
       _emailController.clear();
       _passwordController.clear();
     });
+    // AuthNotifier will automatically update isAuthenticated to false
   }
 
   Future<void> _loadJobs() async {
@@ -137,6 +127,7 @@ class _SupabaseWidgetState extends State<SupabaseWidget> {
   }
 
   Future<void> _saveCurrentJob() async {
+    final authNotifier = Provider.of<AuthNotifier>(context, listen: false);
     final notifier = Provider.of<JobFlowNotifier>(context, listen: false);
     final jobAnalysis = notifier.jobAnalysis;
 
@@ -150,12 +141,14 @@ class _SupabaseWidgetState extends State<SupabaseWidget> {
     setState(() => _isLoading = true);
 
     final jobData = jobAnalysis.toJson();
-    jobData['user_email'] = _userEmail;
+    jobData['user_email'] = authNotifier.userEmail;
     jobData['created_at'] = DateTime.now().toIso8601String();
 
     final result = await _supabaseService.insertData('job_analyses', jobData);
 
     setState(() => _isLoading = false);
+
+    if (!mounted) return;
 
     if (result['success'] == true) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -169,37 +162,127 @@ class _SupabaseWidgetState extends State<SupabaseWidget> {
     }
   }
 
+  void _loadJobDetails(Map<String, dynamic> jobData) {
+    try {
+      // Extract the ID (could be 'id' or other field from Supabase)
+      final jobId = jobData['id']?.toString();
+
+      // Create JobAnalysisModel from the saved data
+      final jobAnalysis = JobAnalysisModel.fromJson(jobData);
+
+      // Get the JobFlowNotifier and load the job
+      final notifier = Provider.of<JobFlowNotifier>(context, listen: false);
+      notifier.loadJobAnalysis(jobAnalysis, jobId: jobId);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Job "${jobAnalysis.customerName}" indlæst til redigering'),
+          backgroundColor: Colors.blue,
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Fejl ved indlæsning: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _deleteJob(Map<String, dynamic> jobData) async {
+    final jobId = jobData['id']?.toString();
+    if (jobId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Kan ikke slette: Mangler job ID')),
+      );
+      return;
+    }
+
+    // Show confirmation dialog
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Bekræft sletning'),
+        content: Text('Er du sikker på, at du vil slette job for "${jobData['customerName']}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Annuller'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Slet'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    setState(() => _isLoading = true);
+
+    final result = await _supabaseService.deleteData('job_analyses', jobId);
+
+    setState(() => _isLoading = false);
+
+    if (!mounted) return;
+
+    if (result['success'] == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Job slettet'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      _loadJobs();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Fejl ved sletning: ${result['error']}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Consumer<AuthNotifier>(
+      builder: (context, authNotifier, child) {
+        final isLoggedIn = authNotifier.isAuthenticated;
+        final userEmail = authNotifier.userEmail;
+
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Supabase Integration',
-                style: Theme.of(context).textTheme.headlineMedium,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Supabase Integration',
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
+                  if (isLoggedIn)
+                    IconButton(
+                      icon: const Icon(Icons.logout),
+                      onPressed: _signOut,
+                      tooltip: 'Log ud',
+                    ),
+                ],
               ),
-              if (_isLoggedIn)
-                IconButton(
-                  icon: const Icon(Icons.logout),
-                  onPressed: _signOut,
-                  tooltip: 'Log ud',
+              const SizedBox(height: 20),
+
+              if (_isLoading && !isLoggedIn)
+                const Expanded(
+                  child: Center(child: CircularProgressIndicator()),
                 ),
-            ],
-          ),
-          const SizedBox(height: 20),
 
-          if (_isLoading && !_isLoggedIn)
-            const Expanded(
-              child: Center(child: CircularProgressIndicator()),
-            ),
-
-          // Login/Signup Form
-          if (!_isLoggedIn && !_isLoading)
+              // Login/Signup Form
+              if (!isLoggedIn && !_isLoading)
             Expanded(
               child: Center(
                 child: SingleChildScrollView(
@@ -297,7 +380,7 @@ class _SupabaseWidgetState extends State<SupabaseWidget> {
             ),
 
           // Logged In View
-          if (_isLoggedIn)
+          if (isLoggedIn)
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -319,7 +402,7 @@ class _SupabaseWidgetState extends State<SupabaseWidget> {
                                   style: TextStyle(fontSize: 12, color: Colors.grey),
                                 ),
                                 Text(
-                                  _userEmail ?? 'Ukendt',
+                                  userEmail ?? 'Ukendt',
                                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                                 ),
                               ],
@@ -381,35 +464,49 @@ class _SupabaseWidgetState extends State<SupabaseWidget> {
                         itemCount: _savedJobs.length,
                         itemBuilder: (context, index) {
                           final job = _savedJobs[index];
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            child: ListTile(
-                              leading: const CircleAvatar(
-                                backgroundColor: Colors.blue,
-                                child: Icon(Icons.work, color: Colors.white),
-                              ),
-                              title: Text(
-                                job['customerName'] ?? 'Ukendt kunde',
-                                style: const TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              subtitle: Text(
-                                '${job['job'] ?? 'Ukendt job'}\n${job['created_at'] ?? ''}',
-                              ),
-                              trailing: Text(
-                                '${job['totalEstimate']} kr',
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.green,
+                          final jobId = job['id']?.toString() ?? index.toString();
+
+                          return Dismissible(
+                            key: Key('job_$jobId'),
+                            direction: DismissDirection.endToStart,
+                            background: Container(
+                              alignment: Alignment.centerRight,
+                              padding: const EdgeInsets.only(right: 20),
+                              color: Colors.red,
+                              child: const Icon(Icons.delete, color: Colors.white),
+                            ),
+                            confirmDismiss: (direction) async {
+                              // Call the delete dialog
+                              await _deleteJob(job);
+                              // Return false to prevent automatic dismissal
+                              // (we'll refresh the list in _deleteJob instead)
+                              return false;
+                            },
+                            child: Card(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              child: ListTile(
+                                leading: const CircleAvatar(
+                                  backgroundColor: Colors.blue,
+                                  child: Icon(Icons.work, color: Colors.white),
                                 ),
+                                title: Text(
+                                  job['customerName'] ?? 'Ukendt kunde',
+                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                subtitle: Text(
+                                  '${job['job'] ?? 'Ukendt job'}\n${job['created_at'] ?? ''}',
+                                ),
+                                trailing: Text(
+                                  '${job['totalEstimate']} kr',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.green,
+                                  ),
+                                ),
+                                isThreeLine: true,
+                                onTap: () => _loadJobDetails(job),
                               ),
-                              isThreeLine: true,
-                              onTap: () {
-                                // TODO: Load job details
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Job: ${job['customerName']}')),
-                                );
-                              },
                             ),
                           );
                         },
@@ -418,8 +515,10 @@ class _SupabaseWidgetState extends State<SupabaseWidget> {
                 ],
               ),
             ),
-        ],
-      ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
