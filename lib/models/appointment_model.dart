@@ -21,6 +21,7 @@ class AppointmentModel {
   // Appointment detaljer
   final String title;
   final String? description;
+  final String? location;
 
   @JsonKey(name: 'start_time')
   final DateTime startTime;
@@ -61,6 +62,7 @@ class AppointmentModel {
     required this.userEmail,
     required this.title,
     this.description,
+    this.location,
     required this.startTime,
     required this.endTime,
     this.estimatedDurationHours,
@@ -136,6 +138,7 @@ class AppointmentModel {
     String? userEmail,
     String? title,
     String? description,
+    String? location,
     DateTime? startTime,
     DateTime? endTime,
     double? estimatedDurationHours,
@@ -154,6 +157,7 @@ class AppointmentModel {
       userEmail: userEmail ?? this.userEmail,
       title: title ?? this.title,
       description: description ?? this.description,
+      location: location ?? this.location,
       startTime: startTime ?? this.startTime,
       endTime: endTime ?? this.endTime,
       estimatedDurationHours: estimatedDurationHours ?? this.estimatedDurationHours,

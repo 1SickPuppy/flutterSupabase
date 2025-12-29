@@ -14,6 +14,7 @@ AppointmentModel _$AppointmentModelFromJson(Map<String, dynamic> json) =>
       userEmail: json['user_email'] as String,
       title: json['title'] as String,
       description: json['description'] as String?,
+      location: json['location'] as String?,
       startTime: DateTime.parse(json['start_time'] as String),
       endTime: DateTime.parse(json['end_time'] as String),
       estimatedDurationHours:
@@ -43,6 +44,7 @@ Map<String, dynamic> _$AppointmentModelToJson(AppointmentModel instance) =>
       'user_email': instance.userEmail,
       'title': instance.title,
       'description': instance.description,
+      'location': instance.location,
       'start_time': instance.startTime.toIso8601String(),
       'end_time': instance.endTime.toIso8601String(),
       'estimated_duration_hours': instance.estimatedDurationHours,
