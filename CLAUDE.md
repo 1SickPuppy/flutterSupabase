@@ -153,6 +153,7 @@ lib/
 │   ├── pdf_generation/                   # Quotation PDF creation
 │   ├── supabase_integration/             # Auth and database operations
 │   ├── customer_management/              # Customer database with CSV import
+│   ├── calendar/                         # Appointment calendar and scheduling
 │   └── job_flow/job_flow_notifier.dart   # Cross-feature state orchestration
 ├── models/                               # JSON-serializable data models
 └── presentation/                         # App-wide UI components
@@ -168,7 +169,7 @@ lib/
 ### State Orchestration
 
 **JobFlowNotifier** (lib/features/job_flow/job_flow_notifier.dart) is the central coordinator that:
-- Manages bottom navigation tab switching (5 tabs: Voice, Data, PDF, Supabase, Kunder)
+- Manages bottom navigation tab switching (6 tabs: Voice, Data, PDF, Supabase, Kunder, Kalender)
 - Stores extracted conversation data
 - Triggers automatic navigation (e.g., auto-switch to Data tab after voice analysis)
 
@@ -266,6 +267,31 @@ Implementation:
 
 **Important**: Users must log in via Supabase tab before importing customers due to RLS policies.
 
+### Calendar Management
+
+Complete calendar and appointment scheduling system:
+- **Calendar Views**: Month and week views with table_calendar package
+- **Danish Locale**: Full Danish date formatting (e.g., "søndag 29. december 2024")
+- **Appointment CRUD**: Create, read, update appointments with detailed form
+- **Customer Integration**: Link appointments to customers from database
+- **Status Tracking**: Visual status with color coding
+  - Planlagt (planned) = Blue
+  - I gang (in_progress) = Orange
+  - Afventer dele (awaiting_parts) = Purple
+  - Færdig (completed) = Green
+  - Aflyst (cancelled) = Red
+- **Time Management**: Start/end time pickers, duration calculation
+- **Location Field**: Optional location/address for appointments
+
+Implementation:
+- Service: `lib/features/calendar/domain/appointment_service.dart`
+- Implementation: `lib/features/calendar/data/appointment_service_impl.dart`
+- Calendar UI: `lib/features/calendar/presentation/calendar_widget.dart`
+- Dialog: `lib/features/calendar/presentation/appointment_dialog.dart`
+- Model: `lib/models/appointment_model.dart` (with location field)
+
+**Important**: Requires `initializeDateFormatting('da', null)` for Danish locale support.
+
 ## Language and Conventions
 
 - **UI Language**: Danish (da-DK)
@@ -284,9 +310,10 @@ Implementation:
 - Full-featured PDF generation UI with preview and success states
 - Supabase authentication and CRUD operations with complete UI
 - **Customer management system** with CSV import, search, and filters
+- **Calendar/appointment management** with month/week views and status tracking
 - Global authentication state management (AuthNotifier)
 - Secure encrypted storage
-- 5-tab navigation (Voice, Data, PDF, Supabase, Kunder)
+- 6-tab navigation (Voice, Data, PDF, Supabase, Kunder, Kalender)
 - Comprehensive data extraction UI with structured display
 - JobFlowNotifier with loading states and error handling
 
@@ -312,12 +339,25 @@ Implementation:
 - ✅ RLS policies for secure data access
 - ✅ Integration with existing Supabase authentication
 
+### Completed in Fase 2 (Calendar/Planner) - December 2024
+- ✅ AppointmentService interface and implementation
+- ✅ Calendar widget with table_calendar package
+- ✅ Month and week view toggle
+- ✅ Appointment creation dialog with full form
+- ✅ Appointment editing functionality
+- ✅ Customer selection integration
+- ✅ Status tracking with color-coded UI (5 statuses)
+- ✅ Time pickers for start/end times
+- ✅ Location field for appointments
+- ✅ Danish locale initialization (initializeDateFormatting)
+- ✅ Event markers on calendar days
+- ✅ Click day to view appointments
+- ✅ Authentication-aware creation
+
 ### Next Steps (Roadmap)
-- 📅 **Fase 2**: Calendar/Planner implementation
-  - Dag/Uge/Måned views
-  - Appointment scheduling
-  - Google Calendar export
-  - Status colors for appointments
+- 📤 **Google Calendar Export** (Optional enhancement)
+  - Export appointments to .ics format
+  - Integration with Google Calendar
 - 💼 **Fase 3**: Quote/Tilbud workflow
   - Convert PDF to formal quote
   - Email sending via mailto
@@ -350,6 +390,9 @@ Implementation:
 - Customer service: `lib/features/customer_management/data/customer_service_impl.dart`
 - CSV import: `lib/features/customer_management/data/csv_import_service.dart`
 - Customer UI: `lib/features/customer_management/presentation/customer_list_widget.dart`
+- Appointment service: `lib/features/calendar/data/appointment_service_impl.dart`
+- Calendar UI: `lib/features/calendar/presentation/calendar_widget.dart`
+- Appointment dialog: `lib/features/calendar/presentation/appointment_dialog.dart`
 
 ### Database
 - Customer schema: `supabase_schema_fase1_v2.sql`
