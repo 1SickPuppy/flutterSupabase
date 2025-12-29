@@ -144,13 +144,15 @@ The app follows feature-based modular architecture with strict layer separation:
 ```
 lib/
 ├── core/
-│   ├── di/service_locator.dart          # GetIt dependency injection setup
+│   ├── auth/auth_notifier.dart           # Global authentication state management
+│   ├── di/service_locator.dart           # GetIt dependency injection setup
 │   └── security/                         # Encrypted storage service (AES + platform keystore)
 ├── features/                             # Each feature has domain/data/presentation layers
 │   ├── voice_input/                      # Danish speech-to-text (da-DK locale)
-│   ├── data_extraction/                  # Job info extraction (currently mock data)
+│   ├── data_extraction/                  # Job info extraction with Gemini AI
 │   ├── pdf_generation/                   # Quotation PDF creation
 │   ├── supabase_integration/             # Auth and database operations
+│   ├── customer_management/              # Customer database with CSV import
 │   └── job_flow/job_flow_notifier.dart   # Cross-feature state orchestration
 ├── models/                               # JSON-serializable data models
 └── presentation/                         # App-wide UI components
@@ -165,10 +167,15 @@ lib/
 
 ### State Orchestration
 
-`JobFlowNotifier` (lib/features/job_flow/job_flow_notifier.dart) is the central coordinator that:
-- Manages bottom navigation tab switching (4 tabs: Voice, Data, PDF, Supabase)
+**JobFlowNotifier** (lib/features/job_flow/job_flow_notifier.dart) is the central coordinator that:
+- Manages bottom navigation tab switching (5 tabs: Voice, Data, PDF, Supabase, Kunder)
 - Stores extracted conversation data
 - Triggers automatic navigation (e.g., auto-switch to Data tab after voice analysis)
+
+**AuthNotifier** (lib/core/auth/auth_notifier.dart) manages global authentication state:
+- Tracks user login/logout across the app
+- Provides authentication status to all widgets via Provider
+- Used by features requiring authentication (e.g., CSV import, database operations)
 
 ## Critical Implementation Details
 
@@ -241,6 +248,24 @@ Creates A4 PDFs with Danish formatting:
 
 Implementation: `lib/features/pdf_generation/data/pdf_generation_service_impl.dart`
 
+### Customer Management
+
+Full-featured customer database with CSV import:
+- **CSV Import**: Bulk import from `developercatfiles/1dscoolcustomers.csv`
+- **Search & Filter**: Multi-field search (name, email, phone, address) with category filters
+- **Categories**: Erhverv (Business), Privat (Private), Offentlig (Public)
+- **Authentication Required**: RLS policies enforce authentication for data operations
+- **Models**: CustomerModel, AppointmentModel, PartsOrderModel
+- **Database**: Supabase PostgreSQL with BIGSERIAL primary keys
+
+Implementation:
+- Service: `lib/features/customer_management/domain/customer_service.dart`
+- CSV Import: `lib/features/customer_management/data/csv_import_service.dart`
+- UI: `lib/features/customer_management/presentation/customer_list_widget.dart`
+- Schema: `supabase_schema_fase1_v2.sql`
+
+**Important**: Users must log in via Supabase tab before importing customers due to RLS policies.
+
 ## Language and Conventions
 
 - **UI Language**: Danish (da-DK)
@@ -252,41 +277,83 @@ Implementation: `lib/features/pdf_generation/data/pdf_generation_service_impl.da
 
 ## Current Development Status
 
-### Implemented
+### Implemented ✅
 - Voice input with Danish speech recognition (60s recording, 15s pause tolerance)
 - **AI-powered data extraction with Google Gemini** (extracts customer info, job details, materials, prices)
 - PDF generation with Danish currency formatting and Unicode support
 - Full-featured PDF generation UI with preview and success states
 - Supabase authentication and CRUD operations with complete UI
+- **Customer management system** with CSV import, search, and filters
+- Global authentication state management (AuthNotifier)
 - Secure encrypted storage
-- Tab-based navigation with state coordination
+- 5-tab navigation (Voice, Data, PDF, Supabase, Kunder)
 - Comprehensive data extraction UI with structured display
 - JobFlowNotifier with loading states and error handling
 
-### Completed in Fase 1 & 2
-- ✅ Enhanced UI for all 4 tabs (Voice, Data, PDF, Supabase)
+### Completed in Fase 1-3 (Core Features)
+- ✅ Enhanced UI for all tabs with consistent design
 - ✅ Gemini AI integration for intelligent data extraction
 - ✅ Fixed voice input singleton disposal issue
 - ✅ Fixed PDF Unicode support (removed fontWeight dependencies)
 - ✅ Real-time transcription display in notes field
-
-### Completed in Fase 3
 - ✅ Google Gemini 2.5 Flash integration (free tier, 1M token context)
 - ✅ Web platform PDF generation with auto-download
 - ✅ Danish character sanitization for PDF compatibility (æ→ae, ø→o, å→aa)
 - ✅ Cross-platform support via universal_html package
 - ✅ Fixed all model compatibility issues with Gemini API
 
+### Completed in Fase 1 (Customer Management) - December 2024
+- ✅ Customer database schema (customers, appointments, parts_orders tables)
+- ✅ CustomerModel, AppointmentModel, PartsOrderModel with JSON serialization
+- ✅ CSV import service with bulk insert and error handling
+- ✅ CustomerService with full CRUD operations
+- ✅ Customer list UI with search and category filters
+- ✅ Authentication-aware UI with warnings for unauthenticated users
+- ✅ RLS policies for secure data access
+- ✅ Integration with existing Supabase authentication
+
+### Next Steps (Roadmap)
+- 📅 **Fase 2**: Calendar/Planner implementation
+  - Dag/Uge/Måned views
+  - Appointment scheduling
+  - Google Calendar export
+  - Status colors for appointments
+- 💼 **Fase 3**: Quote/Tilbud workflow
+  - Convert PDF to formal quote
+  - Email sending via mailto
+  - Accept/Reject tracking
+  - Auto-create appointments on acceptance
+- 🔧 **Fase 4**: Parts tracking system
+  - Parts order management
+  - Status progression (not ordered → ordered → arrived → installed)
+  - Integration with appointments
+
 ## Important File References
 
+### Core Files
 - Entry point: `lib/main.dart`
 - Quick run script: `run.sh` (loads .env and runs app)
 - DI setup: `lib/core/di/service_locator.dart`
+- Auth state: `lib/core/auth/auth_notifier.dart`
 - State orchestration: `lib/features/job_flow/job_flow_notifier.dart`
-- Main data model: `lib/models/job_analysis_model.dart`
 - Home navigation: `lib/presentation/screens/home_screen.dart`
+
+### Data Models
+- Job analysis: `lib/models/job_analysis_model.dart`
+- Customer: `lib/models/customer_model.dart`
+- Appointment: `lib/models/appointment_model.dart`
+- Parts order: `lib/models/parts_order_model.dart`
+
+### Feature Implementations
 - AI extraction: `lib/features/data_extraction/data/data_extraction_service_impl.dart`
 - PDF generation: `lib/features/pdf_generation/data/pdf_generation_service_impl.dart`
+- Customer service: `lib/features/customer_management/data/customer_service_impl.dart`
+- CSV import: `lib/features/customer_management/data/csv_import_service.dart`
+- Customer UI: `lib/features/customer_management/presentation/customer_list_widget.dart`
+
+### Database
+- Customer schema: `supabase_schema_fase1_v2.sql`
+- Customer CSV: `developercatfiles/1dscoolcustomers.csv`
 
 ## Testing
 
