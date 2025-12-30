@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeveloperCat DK - Design System Preview</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Light Mode Colors - High Contrast Minimalist */
+            --bg-primary: #FFFFFF;
+            --bg-secondary: #F8F9FA;
+            --bg-elevated: #FFFFFF;
+            --text-primary: #000000;
+            --text-secondary: #4A5568;
+            --text-tertiary: #A0AEC0;
+            --border-primary: #000000;
+            --border-secondary: #E2E8F0;
+
+            /* Accent - Safety Orange */
+            --accent-primary: #FF6B35;
+            --accent-dark: #E85A2A;
+            --accent-light: #FF8859;
+
+            /* Status Colors */
+            --status-success: #10B981;
+            --status-warning: #F59E0B;
+            --status-error: #EF4444;
+            --status-info: #3B82F6;
+            --status-purple: #8B5CF6;
+
+            /* Status Backgrounds (Light Mode) */
+            --status-success-bg: #D1FAE5;
+            --status-warning-bg: #FEF3C7;
+            --status-error-bg: #FEE2E2;
+            --status-info-bg: #DBEAFE;
+            --status-purple-bg: #EDE9FE;
+
+            /* Typography */
+            --font-heading: 'Rajdhani', sans-serif;
+            --font-body: 'IBM Plex Sans', sans-serif;
+            --font-mono: 'IBM Plex Mono', monospace;
+
+            /* Spacing Scale */
+            --space-1: 8px;
+            --space-2: 16px;
+            --space-3: 24px;
+            --space-4: 32px;
+            --space-5: 48px;
+            --space-6: 64px;
+
+            /* Border Radius */
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+
+            /* Shadows */
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.15);
+            --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.2);
+
+            /* Touch Target Minimum */
+            --touch-target: 60px;
+        }
+
+        [data-theme="dark"] {
+            /* Dark Mode Colors */
+            --bg-primary: #000000;
+            --bg-secondary: #1A1A1A;
+            --bg-elevated: #262626;
+            --text-primary: #FFFFFF;
+            --text-secondary: #A0AEC0;
+            --text-tertiary: #4A5568;
+            --border-primary: #FFFFFF;
+            --border-secondary: #333333;
+
+            /* Status Backgrounds (Dark Mode) */
+            --status-success-bg: #064E3B;
+            --status-warning-bg: #78350F;
+            --status-error-bg: #7F1D1D;
+            --status-info-bg: #1E3A8A;
+            --status-purple-bg: #4C1D95;
+
+            /* Shadows for dark mode */
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--space-4);
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-3) var(--space-4);
+            border-bottom: 2px solid var(--border-primary);
+            margin-bottom: var(--space-5);
+        }
+
+        .logo {
+            font-family: var(--font-heading);
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-primary);
+            border-radius: var(--radius-lg);
+            padding: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+            color: white;
+        }
+
+        .theme-option {
+            padding: 12px 20px;
+            border-radius: var(--radius-md);
+            font-family: var(--font-heading);
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .theme-option.active {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        /* Section */
+        .section {
+            margin-bottom: var(--space-6);
+        }
+
+        .section-title {
+            font-family: var(--font-heading);
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: var(--space-3);
+            border-left: 6px solid var(--accent-primary);
+            padding-left: var(--space-2);
+        }
+
+        .section-subtitle {
+            font-family: var(--font-heading);
+            font-size: 24px;
+            font-weight: 600;
+            margin: var(--space-4) 0 var(--space-2) 0;
+            color: var(--text-secondary);
+        }
+
+        /* Color Palette */
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-3);
+            margin-bottom: var(--space-4);
+        }
+
+        .color-swatch {
+            border: 2px solid var(--border-secondary);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+
+        .color-preview {
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-mono);
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .color-info {
+            padding: var(--space-2);
+            background: var(--bg-secondary);
+            border-top: 2px solid var(--border-secondary);
+        }
+
+        .color-name {
+            font-family: var(--font-heading);
+            font-weight: 600;
+            font-size: 18px;
+            margin-bottom: 4px;
+        }
+
+        .color-value {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* Typography Scale */
+        .type-scale {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-3);
+        }
+
+        .type-example {
+            padding: var(--space-3);
+            border: 2px solid var(--border-secondary);
+            border-radius: var(--radius-md);
+            background: var(--bg-secondary);
+        }
+
+        .type-label {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--accent-primary);
+            margin-bottom: var(--space-1);
+            font-weight: 600;
+        }
+
+        .heading-1 {
+            font-family: var(--font-heading);
+            font-size: 48px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .heading-2 {
+            font-family: var(--font-heading);
+            font-size: 36px;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        .heading-3 {
+            font-family: var(--font-heading);
+            font-size: 28px;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        .body-large {
+            font-family: var(--font-body);
+            font-size: 20px;
+            font-weight: 400;
+            line-height: 1.6;
+        }
+
+        .body-regular {
+            font-family: var(--font-body);
+            font-size: 18px;
+            font-weight: 400;
+            line-height: 1.6;
+        }
+
+        .caption {
+            font-family: var(--font-body);
+            font-size: 16px;
+            font-weight: 400;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .mono {
+            font-family: var(--font-mono);
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        /* Buttons */
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-3);
+        }
+
+        .btn {
+            font-family: var(--font-heading);
+            font-size: 18px;
+            font-weight: 600;
+            padding: 20px 32px;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-height: var(--touch-target);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-1);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn:active {
+            transform: translateY(2px);
+        }
+
+        .btn-primary {
+            background: var(--accent-primary);
+            color: white;
+            border: 2px solid var(--accent-primary);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-dark);
+            border-color: var(--accent-dark);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-primary);
+            border: 2px solid var(--border-primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+        }
+
+        .btn-success {
+            background: var(--status-success);
+            color: white;
+            border: 2px solid var(--status-success);
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-danger {
+            background: var(--status-error);
+            color: white;
+            border: 2px solid var(--status-error);
+        }
+
+        .btn-danger:hover {
+            background: #DC2626;
+        }
+
+        /* Dashboard Cards */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--space-3);
+            margin-top: var(--space-4);
+        }
+
+        .dashboard-card {
+            background: var(--bg-elevated);
+            border: 3px solid var(--border-primary);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 180px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dashboard-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background: var(--accent-primary);
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .dashboard-card:hover::before {
+            transform: scaleY(1);
+        }
+
+        .card-icon {
+            font-size: 48px;
+            margin-bottom: var(--space-2);
+        }
+
+        .card-title {
+            font-family: var(--font-heading);
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: var(--space-1);
+        }
+
+        .card-description {
+            font-size: 16px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .card-status {
+            margin-top: auto;
+            padding-top: var(--space-2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 2px solid var(--border-secondary);
+        }
+
+        /* Status Badges */
+        .badge {
+            font-family: var(--font-heading);
+            font-size: 14px;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: var(--radius-lg);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-success {
+            background: var(--status-success-bg);
+            color: var(--status-success);
+        }
+
+        .badge-warning {
+            background: var(--status-warning-bg);
+            color: var(--status-warning);
+        }
+
+        .badge-error {
+            background: var(--status-error-bg);
+            color: var(--status-error);
+        }
+
+        .badge-info {
+            background: var(--status-info-bg);
+            color: var(--status-info);
+        }
+
+        .badge-purple {
+            background: var(--status-purple-bg);
+            color: var(--status-purple);
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: var(--space-3);
+        }
+
+        .form-label {
+            font-family: var(--font-heading);
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: var(--space-1);
+            display: block;
+        }
+
+        .form-input {
+            font-family: var(--font-body);
+            font-size: 18px;
+            padding: 16px;
+            border: 2px solid var(--border-secondary);
+            border-radius: var(--radius-md);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            width: 100%;
+            min-height: var(--touch-target);
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+
+        /* Stats Display */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-3);
+            margin: var(--space-4) 0;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-secondary);
+            border-radius: var(--radius-md);
+            padding: var(--space-3);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-family: var(--font-mono);
+            font-size: 48px;
+            font-weight: 700;
+            color: var(--accent-primary);
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-family: var(--font-heading);
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-top: var(--space-1);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-in {
+            animation: slideIn 0.5s ease forwards;
+        }
+
+        .animate-in:nth-child(1) { animation-delay: 0.1s; }
+        .animate-in:nth-child(2) { animation-delay: 0.2s; }
+        .animate-in:nth-child(3) { animation-delay: 0.3s; }
+        .animate-in:nth-child(4) { animation-delay: 0.4s; }
+        .animate-in:nth-child(5) { animation-delay: 0.5s; }
+        .animate-in:nth-child(6) { animation-delay: 0.6s; }
+
+        /* Mobile Dashboard Preview */
+        .mobile-preview {
+            max-width: 400px;
+            margin: var(--space-4) auto;
+            border: 4px solid var(--border-primary);
+            border-radius: 24px;
+            padding: var(--space-3);
+            background: var(--bg-primary);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .mobile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-3);
+            padding-bottom: var(--space-2);
+            border-bottom: 2px solid var(--border-primary);
+        }
+
+        .mobile-time {
+            font-family: var(--font-mono);
+            font-size: 16px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">DEVELOPERCAT DK</div>
+        <div class="theme-toggle" id="themeToggle">
+            <div class="theme-option active" data-theme="light">LYS</div>
+            <div class="theme-option" data-theme="dark">MØRK</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Introduction -->
+        <div class="section">
+            <h1 class="section-title">Design System Preview</h1>
+            <p class="body-large">
+                Dette er en komplet visning af det nye design system for DeveloperCat DK.
+                Designet er optimeret til brug under kørsel med <strong>høj kontrast</strong>,
+                <strong>store berøringspunkter</strong> og <strong>minimalistisk æstetik</strong>.
+            </p>
+        </div>
+
+        <!-- Color Palette -->
+        <div class="section">
+            <h2 class="section-title">Farvepalette</h2>
+            <p class="body-regular">Høj kontrast minimalistisk tema med én primær accentfarve.</p>
+
+            <h3 class="section-subtitle">Grund Farver</h3>
+            <div class="color-grid">
+                <div class="color-swatch">
+                    <div class="color-preview" style="background: #000; color: white;">
+                        <span>#000000</span>
+                    </div>
+                    <div class="color-info">
+                        <div class="color-name">Sort / Hvid</div>
+                        <div class="color-value">Primær tekst & border</div>
+                    </div>
+                </div>
+
+                <div class="color-swatch">
+                    <div class="color-preview" style="background: #FF6B35; color: white;">
+                        <span>#FF6B35</span>
+                    </div>
+                    <div class="color-info">
+                        <div class="color-name">Safety Orange</div>
+                        <div class="color-value">Primær accent</div>
+                    </div>
+                </div>
+
+                <div class="color-swatch">
+                    <div class="color-preview" style="background: #F8F9FA; color: #000;">
+                        <span>#F8F9FA</span>
+                    </div>
+                    <div class="color-info">
+                        <div class="color-name">Sekundær Baggrund</div>
+                        <div class="color-value">Kort & input baggrunde</div>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="section-subtitle">Status Farver</h3>
+            <div class="color-grid">
+                <div class="color-swatch">
+                    <div class="color-preview" style="background: #10B981; color: white;">
+                        <span>#10B981</span>
+                    </div>
+                    <div class="color-info">
+                        <div class="color-name">Succes / Færdig</div>
+                        <div class="color-value">Grøn status</div>
+                    </div>
+                </div>
+
+                <div class="color-swatch">
+                    <div class="color-preview" style="background: #F59E0B; color: white;">
+                        <span>#F59E0B</span>
+                    </div>
+                    <div class="color-info">
+                        <div class="color-name">Advarsel / I Gang</div>
+                        <div class="color-value">Orange status</div>
+                    </div>
+                </div>
+
+                <div class="color-swatch">
+                    <div class="color-preview" style="background: #EF4444; color: white;">
+                        <span>#EF4444</span>
+                    </div>
+                    <div class="color-info">
+                        <div class="color-name">Fejl / Aflyst</div>
+                        <div class="color-value">Rød status</div>
+                    </div>
+                </div>
+
+                <div class="color-swatch">
+                    <div class="color-preview" style="background: #3B82F6; color: white;">
+                        <span>#3B82F6</span>
+                    </div>
+                    <div class="color-info">
+                        <div class="color-name">Info / Planlagt</div>
+                        <div class="color-value">Blå status</div>
+                    </div>
+                </div>
+
+                <div class="color-swatch">
+                    <div class="color-preview" style="background: #8B5CF6; color: white;">
+                        <span>#8B5CF6</span>
+                    </div>
+                    <div class="color-info">
+                        <div class="color-name">Afventer Dele</div>
+                        <div class="color-value">Lilla status</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Typography -->
+        <div class="section">
+            <h2 class="section-title">Typografi</h2>
+            <p class="body-regular">Optimeret for læsbarhed under kørsel - minimum 18px kropstekst.</p>
+
+            <div class="type-scale">
+                <div class="type-example">
+                    <div class="type-label">HEADING 1 - 48px / Rajdhani Bold</div>
+                    <div class="heading-1">Stor Overskrift</div>
+                </div>
+
+                <div class="type-example">
+                    <div class="type-label">HEADING 2 - 36px / Rajdhani Bold</div>
+                    <div class="heading-2">Mellem Overskrift</div>
+                </div>
+
+                <div class="type-example">
+                    <div class="type-label">HEADING 3 - 28px / Rajdhani SemiBold</div>
+                    <div class="heading-3">Lille Overskrift</div>
+                </div>
+
+                <div class="type-example">
+                    <div class="type-label">BODY LARGE - 20px / IBM Plex Sans</div>
+                    <div class="body-large">
+                        Stor brødtekst til vigtige beskeder og introduktioner.
+                        Let at læse selv i bevægelse.
+                    </div>
+                </div>
+
+                <div class="type-example">
+                    <div class="type-label">BODY REGULAR - 18px / IBM Plex Sans</div>
+                    <div class="body-regular">
+                        Standard brødtekst til almindelig læsning. Minimum størrelse
+                        for sikker brug under kørsel.
+                    </div>
+                </div>
+
+                <div class="type-example">
+                    <div class="type-label">CAPTION - 16px / IBM Plex Sans</div>
+                    <div class="caption">
+                        Sekundær tekst og billedtekster. Bruges kun til mindre vigtige oplysninger.
+                    </div>
+                </div>
+
+                <div class="type-example">
+                    <div class="type-label">MONO - 18px / IBM Plex Mono</div>
+                    <div class="mono">
+                        12.450,00 DKK | 14:30 | +45 12 34 56 78
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="section">
+            <h2 class="section-title">Knapper</h2>
+            <p class="body-regular">Alle knapper har minimum 60px højde for nem betjening under kørsel.</p>
+
+            <div class="button-grid">
+                <button class="btn btn-primary">Primær Knap</button>
+                <button class="btn btn-secondary">Sekundær Knap</button>
+                <button class="btn btn-success">Gem</button>
+                <button class="btn btn-danger">Slet</button>
+            </div>
+        </div>
+
+        <!-- Status Badges -->
+        <div class="section">
+            <h2 class="section-title">Status Badges</h2>
+            <p class="body-regular">Farvekodede statusmærkater med høj kontrast.</p>
+
+            <div style="display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-3);">
+                <span class="badge badge-info">● Planlagt</span>
+                <span class="badge badge-warning">● I Gang</span>
+                <span class="badge badge-purple">● Afventer Dele</span>
+                <span class="badge badge-success">● Færdig</span>
+                <span class="badge badge-error">● Aflyst</span>
+            </div>
+        </div>
+
+        <!-- Form Elements -->
+        <div class="section">
+            <h2 class="section-title">Formularelementer</h2>
+
+            <div class="form-group">
+                <label class="form-label">Email Adresse</label>
+                <input type="email" class="form-input" placeholder="navn@firma.dk" value="eksempel@firma.dk">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Telefonnummer</label>
+                <input type="tel" class="form-input" placeholder="+45 12 34 56 78" value="+45 12 34 56 78">
+            </div>
+        </div>
+
+        <!-- Dashboard Preview -->
+        <div class="section">
+            <h2 class="section-title">Dashboard Layout</h2>
+            <p class="body-regular">
+                Hovedskærm med 6 store kort for hurtigt overblik.
+                Hver funktion er et stort, tappet kort.
+            </p>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">24</div>
+                    <div class="stat-label">Kunder</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">8</div>
+                    <div class="stat-label">Aftaler</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">3</div>
+                    <div class="stat-label">I Dag</div>
+                </div>
+            </div>
+
+            <!-- Dashboard Cards -->
+            <div class="dashboard-grid">
+                <div class="dashboard-card animate-in">
+                    <div class="card-icon">🎤</div>
+                    <div class="card-title">Stemme Input</div>
+                    <div class="card-description">
+                        Optag job-oplysninger med dansk talegenkendelse
+                    </div>
+                    <div class="card-status">
+                        <span class="badge badge-success">● Klar</span>
+                        <span style="font-family: var(--font-mono); font-size: 14px;">60s</span>
+                    </div>
+                </div>
+
+                <div class="dashboard-card animate-in">
+                    <div class="card-icon">📊</div>
+                    <div class="card-title">Data Udtræk</div>
+                    <div class="card-description">
+                        AI-drevet analyse af job-information
+                    </div>
+                    <div class="card-status">
+                        <span class="badge badge-info">● Standby</span>
+                        <span style="font-family: var(--font-mono); font-size: 14px;">Gemini</span>
+                    </div>
+                </div>
+
+                <div class="dashboard-card animate-in">
+                    <div class="card-icon">📄</div>
+                    <div class="card-title">PDF Tilbud</div>
+                    <div class="card-description">
+                        Generer professionelle tilbud øjeblikkeligt
+                    </div>
+                    <div class="card-status">
+                        <span class="badge badge-success">● Klar</span>
+                        <span style="font-family: var(--font-mono); font-size: 14px;">A4</span>
+                    </div>
+                </div>
+
+                <div class="dashboard-card animate-in">
+                    <div class="card-icon">☁️</div>
+                    <div class="card-title">Supabase</div>
+                    <div class="card-description">
+                        Database og autentificering
+                    </div>
+                    <div class="card-status">
+                        <span class="badge badge-success">● Tilsluttet</span>
+                        <span style="font-family: var(--font-mono); font-size: 14px;">Cloud</span>
+                    </div>
+                </div>
+
+                <div class="dashboard-card animate-in">
+                    <div class="card-icon">👥</div>
+                    <div class="card-title">Kunder</div>
+                    <div class="card-description">
+                        Administrer kundeoplysninger og kategorier
+                    </div>
+                    <div class="card-status">
+                        <span class="badge badge-info">● 24 aktive</span>
+                        <span style="font-family: var(--font-mono); font-size: 14px;">CSV</span>
+                    </div>
+                </div>
+
+                <div class="dashboard-card animate-in">
+                    <div class="card-icon">📅</div>
+                    <div class="card-title">Kalender</div>
+                    <div class="card-description">
+                        Se og administrer aftaler og møder
+                    </div>
+                    <div class="card-status">
+                        <span class="badge badge-warning">● 3 i dag</span>
+                        <span style="font-family: var(--font-mono); font-size: 14px;">Uge</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Preview -->
+        <div class="section">
+            <h2 class="section-title">Mobil Forhåndsvisning</h2>
+            <p class="body-regular" style="text-align: center; margin-bottom: var(--space-4);">
+                Sådan ser dashboard ud på en telefon
+            </p>
+
+            <div class="mobile-preview">
+                <div class="mobile-header">
+                    <div class="mobile-time">14:30</div>
+                    <div class="logo" style="font-size: 20px;">DEVELOPERCAT</div>
+                    <div style="font-family: var(--font-mono); font-size: 14px;">●●●</div>
+                </div>
+
+                <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr); gap: var(--space-2); margin-bottom: var(--space-3);">
+                    <div class="stat-card" style="padding: var(--space-2);">
+                        <div class="stat-value" style="font-size: 32px;">24</div>
+                        <div class="stat-label" style="font-size: 12px;">Kunder</div>
+                    </div>
+                    <div class="stat-card" style="padding: var(--space-2);">
+                        <div class="stat-value" style="font-size: 32px;">8</div>
+                        <div class="stat-label" style="font-size: 12px;">Aftaler</div>
+                    </div>
+                    <div class="stat-card" style="padding: var(--space-2);">
+                        <div class="stat-value" style="font-size: 32px;">3</div>
+                        <div class="stat-label" style="font-size: 12px;">I Dag</div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-2);">
+                    <div class="dashboard-card" style="min-height: 120px; padding: var(--space-2);">
+                        <div class="card-icon" style="font-size: 32px;">🎤</div>
+                        <div class="card-title" style="font-size: 18px;">Stemme</div>
+                    </div>
+                    <div class="dashboard-card" style="min-height: 120px; padding: var(--space-2);">
+                        <div class="card-icon" style="font-size: 32px;">📊</div>
+                        <div class="card-title" style="font-size: 18px;">Data</div>
+                    </div>
+                    <div class="dashboard-card" style="min-height: 120px; padding: var(--space-2);">
+                        <div class="card-icon" style="font-size: 32px;">📄</div>
+                        <div class="card-title" style="font-size: 18px;">PDF</div>
+                    </div>
+                    <div class="dashboard-card" style="min-height: 120px; padding: var(--space-2);">
+                        <div class="card-icon" style="font-size: 32px;">☁️</div>
+                        <div class="card-title" style="font-size: 18px;">Cloud</div>
+                    </div>
+                    <div class="dashboard-card" style="min-height: 120px; padding: var(--space-2);">
+                        <div class="card-icon" style="font-size: 32px;">👥</div>
+                        <div class="card-title" style="font-size: 18px;">Kunder</div>
+                    </div>
+                    <div class="dashboard-card" style="min-height: 120px; padding: var(--space-2);">
+                        <div class="card-icon" style="font-size: 32px;">📅</div>
+                        <div class="card-title" style="font-size: 18px;">Kalender</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Design Principles -->
+        <div class="section">
+            <h2 class="section-title">Design Principper</h2>
+
+            <div style="display: grid; gap: var(--space-3); margin-top: var(--space-3);">
+                <div style="border-left: 4px solid var(--accent-primary); padding-left: var(--space-2);">
+                    <h3 class="heading-3">1. Høj Kontrast</h3>
+                    <p class="body-regular">
+                        Sort/hvid med én kraftig accentfarve sikrer maksimal læsbarhed i alle lysforhold.
+                    </p>
+                </div>
+
+                <div style="border-left: 4px solid var(--accent-primary); padding-left: var(--space-2);">
+                    <h3 class="heading-3">2. Store Berøringspunkter</h3>
+                    <p class="body-regular">
+                        Minimum 60px højde på alle interaktive elementer for sikker betjening under kørsel.
+                    </p>
+                </div>
+
+                <div style="border-left: 4px solid var(--accent-primary); padding-left: var(--space-2);">
+                    <h3 class="heading-3">3. Læsbar Typografi</h3>
+                    <p class="body-regular">
+                        Minimum 18px brødtekst med klare, geometriske fonte optimeret til hurtig scanning.
+                    </p>
+                </div>
+
+                <div style="border-left: 4px solid var(--accent-primary); padding-left: var(--space-2);">
+                    <h3 class="heading-3">4. Dashboard-First</h3>
+                    <p class="body-regular">
+                        Alle funktioner tilgængelige fra ét overbliksskærm - minimal navigation nødvendig.
+                    </p>
+                </div>
+
+                <div style="border-left: 4px solid var(--accent-primary); padding-left: var(--space-2);">
+                    <h3 class="heading-3">5. Industriel Æstetik</h3>
+                    <p class="body-regular">
+                        Præcis, funktionel, pålideligt design inspireret af instrumentbrætter og professionelle værktøjer.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div style="height: var(--space-6);"></div>
+    </div>
+
+    <script>
+        // Theme Toggle
+        const html = document.documentElement;
+        const themeToggle = document.getElementById('themeToggle');
+        const themeOptions = themeToggle.querySelectorAll('.theme-option');
+
+        // Load saved theme or default to light
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        html.setAttribute('data-theme', savedTheme);
+        themeOptions.forEach(option => {
+            if (option.dataset.theme === savedTheme) {
+                option.classList.add('active');
+            } else {
+                option.classList.remove('active');
+            }
+        });
+
+        // Theme toggle click handler
+        themeOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                const theme = option.dataset.theme;
+                html.setAttribute('data-theme', theme);
+                localStorage.setItem('theme', theme);
+
+                themeOptions.forEach(opt => opt.classList.remove('active'));
+                option.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

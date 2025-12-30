@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../../../core/di/service_locator.dart';
 import '../../../core/auth/auth_notifier.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../models/appointment_model.dart';
 import '../../../models/customer_model.dart';
 import '../domain/appointment_service.dart';
@@ -95,17 +96,17 @@ class _CalendarWidgetState extends State<CalendarWidget> {
   Color _getStatusColor(String status) {
     switch (status) {
       case 'planned':
-        return Colors.blue;
+        return AppTheme.statusInfo;
       case 'in_progress':
-        return Colors.orange;
+        return AppTheme.statusWarning;
       case 'awaiting_parts':
-        return Colors.purple;
+        return AppTheme.statusPurple;
       case 'completed':
-        return Colors.green;
+        return AppTheme.statusSuccess;
       case 'cancelled':
-        return Colors.red;
+        return AppTheme.statusError;
       default:
-        return Colors.grey;
+        return AppTheme.statusInfo;
     }
   }
 
@@ -206,18 +207,24 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                   padding: const EdgeInsets.all(12),
                   margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(
-                    color: Colors.orange.shade50,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? AppTheme.statusWarningDarkBg
+                        : AppTheme.statusWarningLightBg,
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.orange.shade200),
+                    border: Border.all(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? AppTheme.statusWarning.withOpacity(0.3)
+                          : AppTheme.statusWarning.withOpacity(0.2),
+                    ),
                   ),
-                  child: Row(
+                  child: const Row(
                     children: [
-                      const Icon(Icons.warning_amber, color: Colors.orange),
-                      const SizedBox(width: 12),
-                      const Expanded(
+                      Icon(Icons.warning_amber, color: AppTheme.statusWarning),
+                      SizedBox(width: 12),
+                      Expanded(
                         child: Text(
                           'Du er ikke logget ind. Log ind i Supabase tab for at se og oprette aftaler.',
-                          style: TextStyle(color: Colors.orange),
+                          style: TextStyle(color: AppTheme.statusWarning),
                         ),
                       ),
                     ],
@@ -245,15 +252,15 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                 },
                 calendarStyle: CalendarStyle(
                   todayDecoration: BoxDecoration(
-                    color: Colors.blue.shade300,
+                    color: AppTheme.accentPrimary.withOpacity(0.6),
                     shape: BoxShape.circle,
                   ),
                   selectedDecoration: const BoxDecoration(
-                    color: Colors.blue,
+                    color: AppTheme.accentPrimary,
                     shape: BoxShape.circle,
                   ),
                   markerDecoration: const BoxDecoration(
-                    color: Colors.red,
+                    color: AppTheme.statusError,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -274,7 +281,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 const Icon(Icons.error_outline,
-                                    size: 64, color: Colors.red),
+                                    size: 64, color: AppTheme.statusError),
                                 const SizedBox(height: 16),
                                 Text(_errorMessage!),
                                 const SizedBox(height: 16),
@@ -302,7 +309,9 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                                   ),
                                   Text(
                                     '${_selectedDayAppointments.length} aftaler',
-                                    style: TextStyle(color: Colors.grey[600]),
+                                    style: TextStyle(
+                                      color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
+                                    ),
                                   ),
                                 ],
                               ),
@@ -316,14 +325,18 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                                           mainAxisAlignment:
                                               MainAxisAlignment.center,
                                           children: [
-                                            const Icon(Icons.event_available,
-                                                size: 64, color: Colors.grey),
+                                            Icon(
+                                              Icons.event_available,
+                                              size: 64,
+                                              color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.4),
+                                            ),
                                             const SizedBox(height: 16),
                                             Text(
                                               'Ingen aftaler denne dag',
                                               style: TextStyle(
-                                                  fontSize: 16,
-                                                  color: Colors.grey[600]),
+                                                fontSize: 16,
+                                                color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.6),
+                                              ),
                                             ),
                                           ],
                                         ),
@@ -372,7 +385,11 @@ class _CalendarWidgetState extends State<CalendarWidget> {
             const SizedBox(height: 4),
             Row(
               children: [
-                const Icon(Icons.access_time, size: 16, color: Colors.grey),
+                Icon(
+                  Icons.access_time,
+                  size: 16,
+                  color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.6),
+                ),
                 const SizedBox(width: 4),
                 Text('$startTime - $endTime'),
               ],
@@ -381,7 +398,11 @@ class _CalendarWidgetState extends State<CalendarWidget> {
               const SizedBox(height: 4),
               Row(
                 children: [
-                  const Icon(Icons.location_on, size: 16, color: Colors.grey),
+                  Icon(
+                    Icons.location_on,
+                    size: 16,
+                    color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.6),
+                  ),
                   const SizedBox(width: 4),
                   Expanded(child: Text(appointment.location!)),
                 ],

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../domain/voice_input_service.dart';
 import '../../../core/di/service_locator.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../job_flow/job_flow_notifier.dart';
 import 'dart:async';
 
@@ -106,7 +107,7 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget> {
   Widget build(BuildContext context) {
     final isListening = _isListening;
     final icon = isListening ? Icons.mic_off : Icons.mic;
-    final color = isListening ? Colors.red : Colors.green;
+    final color = isListening ? AppTheme.statusError : AppTheme.statusSuccess;
     final buttonText = isListening ? 'Stop Optagelse' : 'Start Optagelse';
 
     if (!_isInitialized) {

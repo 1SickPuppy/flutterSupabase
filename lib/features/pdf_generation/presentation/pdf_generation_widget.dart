@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../job_flow/job_flow_notifier.dart';
 import '../../../core/di/service_locator.dart';
 import '../../quote/domain/quote_service.dart';
@@ -112,11 +113,11 @@ class PdfGenerationWidget extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                    const Icon(Icons.error_outline, size: 48, color: AppTheme.statusError),
                     const SizedBox(height: 16),
                     Text(
                       errorMessage,
-                      style: const TextStyle(fontSize: 16, color: Colors.red),
+                      style: const TextStyle(fontSize: 16, color: AppTheme.statusError),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 20),
@@ -155,19 +156,19 @@ class PdfGenerationWidget extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.check_circle, size: 64, color: Colors.green),
+                    const Icon(Icons.check_circle, size: 64, color: AppTheme.statusSuccess),
                     const SizedBox(height: 16),
                     const Text(
                       'PDF genereret med succes!',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.green),
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.statusSuccess),
                     ),
                     const SizedBox(height: 20),
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
+                        color: Theme.of(context).colorScheme.surfaceContainerHighest,
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.grey.shade300),
+                        border: Border.all(color: Theme.of(context).dividerColor),
                       ),
                       child: SelectableText(
                         pdfPath,
@@ -257,7 +258,7 @@ class PdfGenerationWidget extends StatelessWidget {
                             ),
                             const SizedBox(height: 8),
                             Table(
-                              border: TableBorder.all(color: Colors.grey.shade300),
+                              border: TableBorder.all(color: Theme.of(context).dividerColor),
                               columnWidths: const {
                                 0: FlexColumnWidth(3),
                                 1: FlexColumnWidth(1),
@@ -266,7 +267,7 @@ class PdfGenerationWidget extends StatelessWidget {
                               },
                               children: [
                                 TableRow(
-                                  decoration: BoxDecoration(color: Colors.grey.shade200),
+                                  decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerHighest),
                                   children: const [
                                     Padding(
                                       padding: EdgeInsets.all(8.0),
@@ -324,7 +325,11 @@ class PdfGenerationWidget extends StatelessWidget {
                                   ],
                                 ),
                                 TableRow(
-                                  decoration: BoxDecoration(color: Colors.green.shade50),
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).brightness == Brightness.dark
+                                        ? AppTheme.statusSuccessDarkBg
+                                        : AppTheme.statusSuccessLightBg,
+                                  ),
                                   children: [
                                     const Padding(padding: EdgeInsets.all(8.0), child: Text('')),
                                     const Padding(padding: EdgeInsets.all(8.0), child: Text('')),
@@ -373,7 +378,7 @@ class PdfGenerationWidget extends StatelessWidget {
                         icon: const Icon(Icons.picture_as_pdf),
                         label: const Text('Generer PDF'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
+                          backgroundColor: AppTheme.accentPrimary,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
                           textStyle: const TextStyle(fontSize: 18),

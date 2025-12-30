@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import '../../../core/di/service_locator.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../models/appointment_model.dart';
 import '../../../models/customer_model.dart';
 import '../domain/appointment_service.dart';
@@ -152,7 +153,7 @@ class _AppointmentDialogState extends State<AppointmentDialog> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Fejl: ${result['error']}'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppTheme.statusError,
           ),
         );
       }
@@ -163,7 +164,7 @@ class _AppointmentDialogState extends State<AppointmentDialog> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Fejl: $e'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppTheme.statusError,
         ),
       );
     }
@@ -249,7 +250,7 @@ class _AppointmentDialogState extends State<AppointmentDialog> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Colors.grey[700],
+                    color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
                   ),
                 ),
                 const SizedBox(height: 24),

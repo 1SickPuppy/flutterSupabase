@@ -21,7 +21,10 @@ dependencies:
   
   # State management
   provider: ^6.0.5
-  
+
+  # Typography
+  google_fonts: ^6.1.0
+
   # Voice input
   speech_to_text: ^7.3.0
   
@@ -47,6 +50,9 @@ dependencies:
 
   # Quote/Tilbud
   uuid: ^4.0.0
+
+  # Cross-platform URL handling
+  url_launcher: ^6.3.1
 
   get_it: any
   intl: any

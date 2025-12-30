@@ -1,4 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Network access for Supabase and Gemini API -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <!-- Microphone access for speech recognition (voice input) -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+
     <application
         android:label="developer_cat_dk"
         android:name="${applicationName}"

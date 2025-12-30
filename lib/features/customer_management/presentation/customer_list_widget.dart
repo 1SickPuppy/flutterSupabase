@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/di/service_locator.dart';
 import '../../../core/auth/auth_notifier.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../models/customer_model.dart';
 import '../domain/customer_service.dart';
 import '../data/csv_import_service.dart';
@@ -94,7 +95,7 @@ class _CustomerListWidgetState extends State<CustomerListWidget> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('⚠️ Du skal være logget ind for at importere kunder.\nGå til Supabase tab og log ind først.'),
-          backgroundColor: Colors.orange,
+          backgroundColor: AppTheme.statusWarning,
           duration: Duration(seconds: 5),
         ),
       );
@@ -139,7 +140,7 @@ class _CustomerListWidgetState extends State<CustomerListWidget> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(result['message'] ?? 'Import vellykket!'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppTheme.statusSuccess,
             duration: const Duration(seconds: 3),
           ),
         );
@@ -154,7 +155,7 @@ class _CustomerListWidgetState extends State<CustomerListWidget> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Fejl: $errorText'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppTheme.statusError,
             duration: const Duration(seconds: 5),
           ),
         );
@@ -165,7 +166,7 @@ class _CustomerListWidgetState extends State<CustomerListWidget> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Fejl ved import: $e'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppTheme.statusError,
           duration: const Duration(seconds: 5),
         ),
       );
@@ -218,18 +219,24 @@ class _CustomerListWidgetState extends State<CustomerListWidget> {
                   padding: const EdgeInsets.all(12),
                   margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(
-                    color: Colors.orange.shade50,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? AppTheme.statusWarningDarkBg
+                        : AppTheme.statusWarningLightBg,
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.orange.shade200),
+                    border: Border.all(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? AppTheme.statusWarning.withOpacity(0.3)
+                          : AppTheme.statusWarning.withOpacity(0.2),
+                    ),
                   ),
-                  child: Row(
+                  child: const Row(
                     children: [
-                      const Icon(Icons.warning_amber, color: Colors.orange),
-                      const SizedBox(width: 12),
-                      const Expanded(
+                      Icon(Icons.warning_amber, color: AppTheme.statusWarning),
+                      SizedBox(width: 12),
+                      Expanded(
                         child: Text(
                           'Du er ikke logget ind. Log ind i Supabase tab for at importere kunder.',
-                          style: TextStyle(color: Colors.orange),
+                          style: TextStyle(color: AppTheme.statusWarning),
                         ),
                       ),
                     ],
@@ -287,7 +294,7 @@ class _CustomerListWidgetState extends State<CustomerListWidget> {
           Text(
             '${_filteredCustomers.length} kunder',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey[600],
+                  color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
                 ),
           ),
           const SizedBox(height: 8),
@@ -302,7 +309,7 @@ class _CustomerListWidgetState extends State<CustomerListWidget> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             const Icon(Icons.error_outline,
-                                size: 64, color: Colors.red),
+                                size: 64, color: AppTheme.statusError),
                             const SizedBox(height: 16),
                             Text(_errorMessage!),
                             const SizedBox(height: 16),
@@ -318,15 +325,20 @@ class _CustomerListWidgetState extends State<CustomerListWidget> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(Icons.people_outline,
-                                    size: 64, color: Colors.grey),
+                                Icon(
+                                  Icons.people_outline,
+                                  size: 64,
+                                  color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.4),
+                                ),
                                 const SizedBox(height: 16),
                                 Text(
                                   _customers.isEmpty
                                       ? 'Ingen kunder endnu.\nKlik "Importer CSV" for at importere kunder.'
                                       : 'Ingen kunder matchede søgningen.',
-                                  style: const TextStyle(
-                                      fontSize: 16, color: Colors.grey),
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.6),
+                                  ),
                                   textAlign: TextAlign.center,
                                 ),
                               ],
@@ -392,13 +404,13 @@ class _CustomerListWidgetState extends State<CustomerListWidget> {
   Color _getCategoryColor(String? category) {
     switch (category) {
       case 'Erhverv':
-        return Colors.blue;
+        return AppTheme.accentPrimary;
       case 'Privat':
-        return Colors.green;
+        return AppTheme.statusSuccess;
       case 'Offentlig':
-        return Colors.orange;
+        return AppTheme.statusWarning;
       default:
-        return Colors.grey;
+        return AppTheme.statusInfo;
     }
   }
 }

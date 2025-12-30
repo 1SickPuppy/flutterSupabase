@@ -78,8 +78,8 @@ class JobFlowNotifier extends ChangeNotifier {
       // Parse result til JobAnalysisModel
       _jobAnalysis = JobAnalysisModel.fromJson(result);
 
-      // ⭐️ VIGTIGT: Skift til Data-fanen (index 1) for at vise resultatet ⭐️
-      _selectedIndex = 1;
+      // ⭐️ VIGTIGT: Skift til Data-fanen (index 2) for at vise resultatet ⭐️
+      _selectedIndex = 2;
 
       print('Data extraction successful: ${_jobAnalysis?.customerName}');
     } catch (e) {
@@ -145,7 +145,7 @@ class JobFlowNotifier extends ChangeNotifier {
     _pdfPath = null;
 
     // Switch to Data tab to view the loaded job
-    _selectedIndex = 1;
+    _selectedIndex = 2;
 
     notifyListeners();
 

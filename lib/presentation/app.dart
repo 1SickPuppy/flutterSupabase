@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 // VIGTIGT: Importer service_locator for JobFlowNotifier
 import '../core/di/service_locator.dart';
+import '../core/theme/app_theme.dart';
+import '../core/theme/theme_notifier.dart';
 import '../features/job_flow/job_flow_notifier.dart';
 import 'screens/home_screen.dart';
 
@@ -12,42 +14,36 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
-    // Sætter JobFlowNotifier op med de nødvendige afhængigheder hentet via getIt
     return MultiProvider(
       providers: [
+        // Theme management
+        ChangeNotifierProvider(
+          create: (_) => ThemeNotifier(),
+        ),
+
+        // Job flow management
         ChangeNotifierProvider(
           create: (_) => JobFlowNotifier(
-            // Henter de 3 services, som Notifieren skal bruge
             getIt(),
             getIt(),
             getIt(),
           ),
         ),
       ],
-      child: MaterialApp(
-        title: 'Voice Business Assistant',
+      child: Consumer<ThemeNotifier>(
+        builder: (context, themeNotifier, child) {
+          return MaterialApp(
+            title: 'DeveloperCat DK',
+            debugShowCheckedModeBanner: false,
 
-        // Standard tema for lyst mode
-        theme: ThemeData(
-          brightness: Brightness.light,
-          primarySwatch: Colors.blue,
-          useMaterial3: true,
-        ),
+            // Industrial Scandinavian Dashboard themes
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: themeNotifier.themeMode,
 
-        // Mørkt tema, der matcher dit design
-        darkTheme: ThemeData(
-          brightness: Brightness.dark,
-          scaffoldBackgroundColor: const Color(0xFF0f172a),
-          primarySwatch: Colors.blue,
-          useMaterial3: true,
-        ),
-
-        // Tvinger den mørke tilstand
-        themeMode: ThemeMode.dark,
-
-        // Sætter HomeScreen (som indeholder navigationen) som startside
-        home: const HomeScreen(),
+            home: const HomeScreen(),
+          );
+        },
       ),
     );
   }

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../../core/di/service_locator.dart';
 import '../../../core/auth/auth_notifier.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../job_flow/job_flow_notifier.dart';
 import '../../supabase_integration/domain/supabase_service.dart';
 
@@ -31,11 +32,11 @@ class _DataExtractionWidgetState extends State<DataExtractionWidget> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Du skal være logget ind for at gemme'),
-          backgroundColor: Colors.orange,
+          backgroundColor: AppTheme.statusWarning,
         ),
       );
       // Navigate to Supabase tab to log in
-      notifier.setSelectedIndex(3);
+      notifier.setSelectedIndex(4);
       return;
     }
 
@@ -75,16 +76,16 @@ class _DataExtractionWidgetState extends State<DataExtractionWidget> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(isEditing ? 'Job opdateret!' : 'Job gemt til Supabase!'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppTheme.statusSuccess,
           ),
         );
         // Navigate to Supabase tab to view saved jobs
-        notifier.setSelectedIndex(3);
+        notifier.setSelectedIndex(4);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Fejl: ${result['error']}'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppTheme.statusError,
           ),
         );
       }
@@ -94,7 +95,7 @@ class _DataExtractionWidgetState extends State<DataExtractionWidget> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Fejl ved gemning: $e'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppTheme.statusError,
         ),
       );
     }
@@ -149,11 +150,11 @@ class _DataExtractionWidgetState extends State<DataExtractionWidget> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                  const Icon(Icons.error_outline, size: 48, color: AppTheme.statusError),
                   const SizedBox(height: 16),
                   Text(
                     errorMessage,
-                    style: const TextStyle(fontSize: 16, color: Colors.red),
+                    style: const TextStyle(fontSize: 16, color: AppTheme.statusError),
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -215,7 +216,7 @@ class _DataExtractionWidgetState extends State<DataExtractionWidget> {
                                 padding: const EdgeInsets.only(bottom: 4.0),
                                 child: Row(
                                   children: [
-                                    const Icon(Icons.check_circle, size: 16, color: Colors.green),
+                                    const Icon(Icons.check_circle, size: 16, color: AppTheme.statusSuccess),
                                     const SizedBox(width: 8),
                                     Text(date),
                                   ],
@@ -230,7 +231,7 @@ class _DataExtractionWidgetState extends State<DataExtractionWidget> {
                       Icons.hardware,
                       [
                         Table(
-                          border: TableBorder.all(color: Colors.grey.shade300),
+                          border: TableBorder.all(color: Theme.of(context).dividerColor),
                           columnWidths: const {
                             0: FlexColumnWidth(3),
                             1: FlexColumnWidth(2),
@@ -238,7 +239,7 @@ class _DataExtractionWidgetState extends State<DataExtractionWidget> {
                           },
                           children: [
                             TableRow(
-                              decoration: BoxDecoration(color: Colors.grey.shade200),
+                              decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerHighest),
                               children: const [
                                 Padding(
                                   padding: EdgeInsets.all(8.0),
@@ -284,7 +285,9 @@ class _DataExtractionWidgetState extends State<DataExtractionWidget> {
                       Icons.attach_money,
                       [
                         Card(
-                          color: Colors.green.shade50,
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? AppTheme.statusSuccessDarkBg
+                              : AppTheme.statusSuccessLightBg,
                           child: Padding(
                             padding: const EdgeInsets.all(16.0),
                             child: Row(
@@ -319,9 +322,15 @@ class _DataExtractionWidgetState extends State<DataExtractionWidget> {
                           Container(
                             padding: const EdgeInsets.all(12.0),
                             decoration: BoxDecoration(
-                              color: Colors.amber.shade50,
+                              color: Theme.of(context).brightness == Brightness.dark
+                                  ? AppTheme.statusWarningDarkBg
+                                  : AppTheme.statusWarningLightBg,
                               borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.amber.shade200),
+                              border: Border.all(
+                                color: Theme.of(context).brightness == Brightness.dark
+                                    ? AppTheme.statusWarning.withOpacity(0.3)
+                                    : AppTheme.statusWarning.withOpacity(0.2),
+                              ),
                             ),
                             child: Text(
                               jobAnalysis.notes!,
@@ -340,14 +349,14 @@ class _DataExtractionWidgetState extends State<DataExtractionWidget> {
                             icon: const Icon(Icons.picture_as_pdf),
                             label: const Text('Generer PDF'),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue,
+                              backgroundColor: AppTheme.accentPrimary,
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 12),
                             ),
                             onPressed: () {
                               notifier.generatePdf();
                               // Switch to PDF tab
-                              notifier.setSelectedIndex(2);
+                              notifier.setSelectedIndex(3);
                             },
                           ),
                         ),
@@ -370,7 +379,7 @@ class _DataExtractionWidgetState extends State<DataExtractionWidget> {
                                   : (isEditing ? 'Opdater i Supabase' : 'Gem til Supabase')
                             ),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: isEditing ? Colors.orange : Colors.green,
+                              backgroundColor: isEditing ? AppTheme.statusWarning : AppTheme.statusSuccess,
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 12),
                             ),

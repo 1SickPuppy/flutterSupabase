@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/di/service_locator.dart';
 import '../../../core/auth/auth_notifier.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../models/job_analysis_model.dart';
 import '../domain/supabase_service.dart';
 import '../../job_flow/job_flow_notifier.dart';
@@ -212,7 +213,7 @@ class _SupabaseWidgetState extends State<SupabaseWidget> {
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(foregroundColor: AppTheme.statusError),
             child: const Text('Slet'),
           ),
         ],
@@ -233,7 +234,7 @@ class _SupabaseWidgetState extends State<SupabaseWidget> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Job slettet'),
-          backgroundColor: Colors.green,
+          backgroundColor: AppTheme.statusSuccess,
         ),
       );
       _loadJobs();
@@ -241,7 +242,7 @@ class _SupabaseWidgetState extends State<SupabaseWidget> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Fejl ved sletning: ${result['error']}'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppTheme.statusError,
         ),
       );
     }
@@ -295,7 +296,7 @@ class _SupabaseWidgetState extends State<SupabaseWidget> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.cloud, size: 64, color: Colors.blue),
+                            const Icon(Icons.cloud, size: 64, color: AppTheme.accentPrimary),
                             const SizedBox(height: 16),
                             const Text(
                               'Log ind for at synkronisere',
@@ -326,18 +327,24 @@ class _SupabaseWidgetState extends State<SupabaseWidget> {
                               Container(
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: Colors.red.shade50,
+                                  color: Theme.of(context).brightness == Brightness.dark
+                                      ? AppTheme.statusErrorDarkBg
+                                      : AppTheme.statusErrorLightBg,
                                   borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: Colors.red.shade200),
+                                  border: Border.all(
+                                    color: Theme.of(context).brightness == Brightness.dark
+                                        ? AppTheme.statusError.withOpacity(0.3)
+                                        : AppTheme.statusError.withOpacity(0.2),
+                                  ),
                                 ),
                                 child: Row(
                                   children: [
-                                    const Icon(Icons.error_outline, color: Colors.red),
+                                    const Icon(Icons.error_outline, color: AppTheme.statusError),
                                     const SizedBox(width: 8),
                                     Expanded(
                                       child: Text(
                                         _errorMessage!,
-                                        style: const TextStyle(color: Colors.red),
+                                        style: const TextStyle(color: AppTheme.statusError),
                                       ),
                                     ),
                                   ],
@@ -351,7 +358,7 @@ class _SupabaseWidgetState extends State<SupabaseWidget> {
                                   child: ElevatedButton(
                                     onPressed: _signIn,
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.blue,
+                                      backgroundColor: AppTheme.accentPrimary,
                                       foregroundColor: Colors.white,
                                       padding: const EdgeInsets.symmetric(vertical: 12),
                                     ),
@@ -386,20 +393,25 @@ class _SupabaseWidgetState extends State<SupabaseWidget> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Card(
-                    color: Colors.green.shade50,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? AppTheme.statusSuccessDarkBg
+                        : AppTheme.statusSuccessLightBg,
                     child: Padding(
                       padding: const EdgeInsets.all(12.0),
                       child: Row(
                         children: [
-                          const Icon(Icons.check_circle, color: Colors.green),
+                          const Icon(Icons.check_circle, color: AppTheme.statusSuccess),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
+                                Text(
                                   'Logget ind som:',
-                                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.6),
+                                  ),
                                 ),
                                 Text(
                                   userEmail ?? 'Ukendt',
@@ -412,7 +424,7 @@ class _SupabaseWidgetState extends State<SupabaseWidget> {
                             icon: const Icon(Icons.save, size: 18),
                             label: const Text('Gem Nuværende Job'),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green,
+                              backgroundColor: AppTheme.statusSuccess,
                               foregroundColor: Colors.white,
                             ),
                             onPressed: _isLoading ? null : _saveCurrentJob,
@@ -442,16 +454,23 @@ class _SupabaseWidgetState extends State<SupabaseWidget> {
                       child: Center(child: CircularProgressIndicator()),
                     ),
                   if (!_isLoadingJobs && _savedJobs.isEmpty)
-                    const Expanded(
+                    Expanded(
                       child: Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.folder_open, size: 64, color: Colors.grey),
-                            SizedBox(height: 16),
+                            Icon(
+                              Icons.folder_open,
+                              size: 64,
+                              color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.4),
+                            ),
+                            const SizedBox(height: 16),
                             Text(
                               'Ingen gemte jobs endnu.\nGem dit første job analyse!',
-                              style: TextStyle(fontSize: 16, color: Colors.grey),
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.6),
+                              ),
                               textAlign: TextAlign.center,
                             ),
                           ],
@@ -472,7 +491,7 @@ class _SupabaseWidgetState extends State<SupabaseWidget> {
                             background: Container(
                               alignment: Alignment.centerRight,
                               padding: const EdgeInsets.only(right: 20),
-                              color: Colors.red,
+                              color: AppTheme.statusError,
                               child: const Icon(Icons.delete, color: Colors.white),
                             ),
                             confirmDismiss: (direction) async {
@@ -486,7 +505,7 @@ class _SupabaseWidgetState extends State<SupabaseWidget> {
                               margin: const EdgeInsets.only(bottom: 12),
                               child: ListTile(
                                 leading: const CircleAvatar(
-                                  backgroundColor: Colors.blue,
+                                  backgroundColor: AppTheme.accentPrimary,
                                   child: Icon(Icons.work, color: Colors.white),
                                 ),
                                 title: Text(
@@ -501,7 +520,7 @@ class _SupabaseWidgetState extends State<SupabaseWidget> {
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.green,
+                                    color: AppTheme.statusSuccess,
                                   ),
                                 ),
                                 isThreeLine: true,
