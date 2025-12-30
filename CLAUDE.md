@@ -15,8 +15,8 @@ DeveloperCat DK is a Danish-language Flutter application for voice-based busines
 | Platform | Status | Notes |
 |----------|--------|-------|
 | **Web (Chrome)** | ✅ **RECOMMENDED** | Use for daily development - fast hot reload, full functionality |
-| **Android** | 🔧 In Progress | Being configured - Gradle setup issues being resolved |
-| **iOS** | ✅ Configured | Requires macOS for building |
+| **Android** | ✅ **READY** | All permissions configured, ready to build and deploy |
+| **iOS** | ✅ **READY** | All permissions configured, requires macOS for building |
 | **Windows** | ⚠️ Not Priority | May work but not actively tested |
 
 ## Recommended Development Workflow
@@ -24,12 +24,24 @@ DeveloperCat DK is a Danish-language Flutter application for voice-based busines
 **For Active Development** (Start here! 🚀):
 
 **Quick Start (Recommended):**
+
+**On Windows:**
+```cmd
+rem Easy shortcut - automatically loads API keys from .env file
+run.bat          # Runs on Chrome (default)
+run.bat chrome   # Explicitly run on Chrome
+run.bat android  # Run on Android emulator/device
+```
+
+**On Linux/Mac:**
 ```bash
 # Easy shortcut - automatically loads API keys from .env file
 ./run.sh          # Runs on Chrome (default)
 ./run.sh chrome   # Explicitly run on Chrome
-./run.sh android  # Run on Android emulator (when fixed)
+./run.sh android  # Run on Android emulator/device
 ```
+
+**IMPORTANT**: Always use `run.bat` (Windows) or `run.sh` (Linux/Mac) to ensure environment variables are loaded!
 
 **Manual Start:**
 ```bash
@@ -58,7 +70,7 @@ SUPABASE_ANON_KEY=your_supabase_anon_key_here
 3. Get Supabase credentials from your Supabase project dashboard
 4. Run with `./run.sh` - it automatically loads the .env file!
 
-**For Mobile Testing** (when Android is fixed):
+**For Mobile Testing**:
 ```bash
 # Check available devices
 flutter devices
@@ -66,6 +78,12 @@ flutter devices
 # Run on Android emulator
 flutter emulators --launch Medium_Phone
 flutter run
+
+# Run on iOS simulator (macOS only)
+flutter run -d "iPhone 15"
+
+# Run on connected physical device
+flutter run -d <device_id>
 ```
 
 ## Essential Commands
@@ -146,7 +164,8 @@ lib/
 ├── core/
 │   ├── auth/auth_notifier.dart           # Global authentication state management
 │   ├── di/service_locator.dart           # GetIt dependency injection setup
-│   └── security/                         # Encrypted storage service (AES + platform keystore)
+│   ├── security/                         # Encrypted storage service (AES + platform keystore)
+│   └── theme/                            # Theme system (AppTheme, ThemeNotifier)
 ├── features/                             # Each feature has domain/data/presentation layers
 │   ├── voice_input/                      # Danish speech-to-text (da-DK locale)
 │   ├── data_extraction/                  # Job info extraction with Gemini AI
@@ -154,9 +173,12 @@ lib/
 │   ├── supabase_integration/             # Auth and database operations
 │   ├── customer_management/              # Customer database with CSV import
 │   ├── calendar/                         # Appointment calendar and scheduling
+│   ├── quote/                            # Quote/tilbud sending service
 │   └── job_flow/job_flow_notifier.dart   # Cross-feature state orchestration
 ├── models/                               # JSON-serializable data models
-└── presentation/                         # App-wide UI components
+└── presentation/
+    ├── components/                       # Reusable UI components (StatusBadge, DashboardCard)
+    └── screens/                          # App screens (home_screen with dashboard)
 ```
 
 ### Key Architectural Patterns
@@ -177,6 +199,11 @@ lib/
 - Tracks user login/logout across the app
 - Provides authentication status to all widgets via Provider
 - Used by features requiring authentication (e.g., CSV import, database operations)
+
+**ThemeNotifier** (lib/core/theme/theme_notifier.dart) manages app theme:
+- Manual light/dark mode toggle
+- Persists user preference via SharedPreferences
+- Provides theme state to entire app via Provider
 
 ## Critical Implementation Details
 
@@ -292,6 +319,49 @@ Implementation:
 
 **Important**: Requires `initializeDateFormatting('da', null)` for Danish locale support.
 
+### Theme System (Industrial Scandinavian Dashboard Design)
+
+Complete professional theme system optimized for driving usage:
+
+- **Design Philosophy**: Industrial Scandinavian Dashboard - high contrast minimalist aesthetic
+- **Typography**:
+  - Headings: Rajdhani (700 weight for headings, 600 for labels)
+  - Body text: IBM Plex Sans (regular/medium/semibold)
+  - Monospace: IBM Plex Mono (for code and technical data)
+  - Optimized for readability while driving
+- **Color Palette**:
+  - Primary accent: Safety Orange (#FF6B35) - high visibility
+  - Success: Green (#10B981)
+  - Warning: Amber (#F59E0B)
+  - Error: Red (#EF4444)
+  - Info: Blue (#3B82F6)
+  - Purple: (#8B5CF6) for special status (awaiting_parts)
+- **Theme Features**:
+  - Manual light/dark toggle (LYS/MØRK buttons in AppBar)
+  - Persistent theme preference via SharedPreferences
+  - Theme-aware status backgrounds (separate dark/light variants)
+  - 60px+ touch targets for driving safety
+  - 8px spacing scale for consistent layouts
+  - 3px borders for high contrast
+- **Dashboard-First Navigation**:
+  - Index 0 = Dashboard with stats and feature cards
+  - Indices 1-6 = Feature pages (Voice, Data, PDF, Supabase, Kunder, Kalender)
+  - Large tappable DashboardCard components
+  - StatusBadge components for color-coded status indicators
+- **Reusable Components**:
+  - `StatusBadge`: 5 status types (planned, in_progress, awaiting_parts, completed, cancelled)
+  - `DashboardCard`: Large cards with icon, title, description, badge, meta info
+
+Implementation:
+- Theme definition: `lib/core/theme/app_theme.dart`
+- Theme state: `lib/core/theme/theme_notifier.dart`
+- Dashboard UI: `lib/presentation/screens/home_screen.dart`
+- Status badge: `lib/presentation/components/status_badge.dart`
+- Dashboard card: `lib/presentation/components/dashboard_card.dart`
+- Design preview: `design_preview.html`
+
+**Important**: All widgets use `AppTheme` constants instead of hardcoded colors for consistency and theme awareness.
+
 ## Language and Conventions
 
 - **UI Language**: Danish (da-DK)
@@ -311,9 +381,11 @@ Implementation:
 - Supabase authentication and CRUD operations with complete UI
 - **Customer management system** with CSV import, search, and filters
 - **Calendar/appointment management** with month/week views and status tracking
+- **Industrial Scandinavian theme system** with light/dark modes and dashboard-first navigation
 - Global authentication state management (AuthNotifier)
+- Global theme state management (ThemeNotifier)
 - Secure encrypted storage
-- 6-tab navigation (Voice, Data, PDF, Supabase, Kunder, Kalender)
+- Dashboard-first navigation (index 0 = Dashboard, 1-6 = features)
 - Comprehensive data extraction UI with structured display
 - JobFlowNotifier with loading states and error handling
 
@@ -354,6 +426,53 @@ Implementation:
 - ✅ Click day to view appointments
 - ✅ Authentication-aware creation
 
+### Completed: Theme System & Dashboard UI - December 2024
+- ✅ **Complete Theme System**:
+  - Industrial Scandinavian design with high contrast minimalist aesthetic
+  - Google Fonts integration (Rajdhani, IBM Plex Sans, IBM Plex Mono)
+  - Safety Orange (#FF6B35) primary accent for high visibility
+  - Complete status color palette (success/warning/error/info/purple)
+  - Theme-aware status backgrounds (separate dark/light variants)
+  - Manual light/dark toggle with SharedPreferences persistence
+  - ThemeNotifier for global theme state management
+  - 60px+ touch targets optimized for driving safety
+  - 8px spacing scale and 3px borders for consistency
+- ✅ **Dashboard-First Navigation**:
+  - Redesigned home screen with dashboard at index 0
+  - Stats overview (customers, appointments, today's count)
+  - 2x3 grid of feature cards using DashboardCard component
+  - Fixed navigation indices across all features (off-by-one bugs)
+  - Auto-navigation fixes in JobFlowNotifier (voice→data, load→data)
+  - LYS/MØRK theme toggle buttons in AppBar
+- ✅ **Reusable Components**:
+  - StatusBadge: Color-coded status indicators (5 types)
+  - DashboardCard: Large tappable cards with icons and status
+- ✅ **Complete Theme Migration**:
+  - Replaced ALL hardcoded colors with AppTheme constants
+  - All 7 widgets now fully theme-aware (voice, data, pdf, supabase, customer, calendar, appointment)
+  - Consistent visual language across entire app
+  - Perfect light/dark mode support everywhere
+- ✅ **Design Preview**: HTML preview file (design_preview.html) for visual documentation
+
+### Completed: Mobile Platform Support - December 2024
+- ✅ **Android Platform Configuration**:
+  - Added INTERNET permission for Supabase and Gemini API
+  - Added RECORD_AUDIO permission for voice input
+  - Updated AndroidManifest.xml with required permissions
+- ✅ **iOS Platform Configuration**:
+  - Created Podfile for CocoaPods dependency management
+  - Added NSMicrophoneUsageDescription with Danish text
+  - Added NSSpeechRecognitionUsageDescription with Danish text
+  - Updated Info.plist with required permissions
+- ✅ **Cross-Platform Code Refactoring**:
+  - Added url_launcher package for cross-platform URL handling
+  - Refactored quote_service_impl.dart to work on all platforms
+  - Replaced web-only universal_html with platform-aware code
+  - Added platform checks (kIsWeb) for web vs mobile logic
+  - Implemented cross-platform mailto link handling
+
+**Result**: App now fully supports Android and iOS platforms with all features functional!
+
 ### Next Steps (Roadmap)
 - 📤 **Google Calendar Export** (Optional enhancement)
   - Export appointments to .ics format
@@ -372,11 +491,13 @@ Implementation:
 
 ### Core Files
 - Entry point: `lib/main.dart`
-- Quick run script: `run.sh` (loads .env and runs app)
+- Quick run scripts: `run.sh` / `run.bat` (loads .env and runs app)
+- App root: `lib/presentation/app.dart`
 - DI setup: `lib/core/di/service_locator.dart`
 - Auth state: `lib/core/auth/auth_notifier.dart`
+- Theme system: `lib/core/theme/app_theme.dart`, `lib/core/theme/theme_notifier.dart`
 - State orchestration: `lib/features/job_flow/job_flow_notifier.dart`
-- Home navigation: `lib/presentation/screens/home_screen.dart`
+- Dashboard UI: `lib/presentation/screens/home_screen.dart`
 
 ### Data Models
 - Job analysis: `lib/models/job_analysis_model.dart`
@@ -387,12 +508,18 @@ Implementation:
 ### Feature Implementations
 - AI extraction: `lib/features/data_extraction/data/data_extraction_service_impl.dart`
 - PDF generation: `lib/features/pdf_generation/data/pdf_generation_service_impl.dart`
+- Quote service: `lib/features/quote/data/quote_service_impl.dart`
 - Customer service: `lib/features/customer_management/data/customer_service_impl.dart`
 - CSV import: `lib/features/customer_management/data/csv_import_service.dart`
 - Customer UI: `lib/features/customer_management/presentation/customer_list_widget.dart`
 - Appointment service: `lib/features/calendar/data/appointment_service_impl.dart`
 - Calendar UI: `lib/features/calendar/presentation/calendar_widget.dart`
 - Appointment dialog: `lib/features/calendar/presentation/appointment_dialog.dart`
+
+### UI Components
+- Status badge: `lib/presentation/components/status_badge.dart`
+- Dashboard card: `lib/presentation/components/dashboard_card.dart`
+- Design preview: `design_preview.html`
 
 ### Database
 - Customer schema: `supabase_schema_fase1_v2.sql`
@@ -450,12 +577,29 @@ mkdir -p assets/icons
 ```
 
 ### Environment Variables
-Environment variables must be passed at runtime using `--dart-define`:
-```bash
-flutter run --dart-define=SUPABASE_URL=<your_url> --dart-define=SUPABASE_ANON_KEY=<your_key>
+
+**CRITICAL**: Environment variables must be passed at build/run time using `--dart-define`.
+
+**✅ CORRECT - Use the run scripts:**
+```cmd
+# Windows
+run.bat android
+
+# Linux/Mac
+./run.sh android
 ```
 
-The `.env` file is not automatically loaded - variables must be provided via command line.
+**❌ WRONG - This will fail with "no host specified":**
+```bash
+flutter run  # Missing environment variables!
+```
+
+**Manual method** (if not using run scripts):
+```bash
+flutter run --dart-define=SUPABASE_URL=<your_url> --dart-define=SUPABASE_ANON_KEY=<your_key> --dart-define=GEMINI_API_KEY=<your_key>
+```
+
+The `.env` file is only used by `run.bat`/`run.sh` scripts to automatically load and pass variables.
 
 ### Project Structure Note
 ✅ **FIXED**: Nested Flutter project in `android/` directory has been cleaned up. Current structure is correct:
@@ -464,14 +608,21 @@ The `.env` file is not automatically loaded - variables must be provided via com
 - `lib/` - Main application code
 
 ### Android Build Status
-🔧 **Currently In Progress**: Android builds are experiencing Gradle cache corruption issues. For now:
-- **Use Chrome for development** (fully functional)
-- Android configuration will be fixed in a future session
-- The nested project structure has been cleaned up
-- Gradle cache needs additional troubleshooting
+✅ **READY FOR MOBILE**: Android platform is now fully configured and ready to build!
 
-When ready to fix Android completely:
+**What's Been Fixed**:
+- ✅ All required permissions added (INTERNET, RECORD_AUDIO)
+- ✅ AndroidManifest.xml properly configured
+- ✅ Cross-platform code refactored (url_launcher integration)
+- ✅ Nested project structure cleaned up
+
+**First Time Build**:
+If you encounter Gradle cache issues on first build:
 1. Ensure all IDEs are closed
-2. Delete entire `C:\Users\<username>\.gradle\caches` directory manually
-3. Run `flutter clean && flutter pub get`
+2. Run `flutter clean && flutter pub get`
+3. If problems persist, delete `C:\Users\<username>\.gradle\caches` directory
 4. Try `flutter run` with emulator running
+
+**iOS Build** (requires macOS):
+1. Run `cd ios && pod install` to install CocoaPods dependencies
+2. Open in Xcode or run `flutter run -d "iPhone 15"`
